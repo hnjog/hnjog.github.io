@@ -1,26 +1,26 @@
 ---
-permalink: /about/
-title: "About"
+permalink: /About/
+title: "About Me"
 excerpt: "Minimal Mistakes is a flexible two-column Jekyll theme."
 layouts_gallery:
-  - url: /assets/images/mm-layout-splash.png
-    image_path: /assets/images/mm-layout-splash.png
-    alt: "splash layout example"
-  - url: /assets/images/mm-layout-single-meta.png
-    image_path: /assets/images/mm-layout-single-meta.png
-    alt: "single layout with comments and related posts"
-  - url: /assets/images/mm-layout-archive.png
-    image_path: /assets/images/mm-layout-archive.png
-    alt: "archive layout example"
+  - url: /image/career/Red_Stone.jpg
+    image_path: /image/career/Red_Stone.jpg
+    alt: "붉은 보석 라이브"
+  - url: /image/career/arVeluga.png
+    image_path: /image/career/arVeluga.png
+    alt: "vuzix app contest"
+
 last_modified_at: 2022-05-27T11:59:26-04:00
 toc: true
+toc_sticky: true
+toc_lable: "MYSELF"
 ---
 
-Minimal Mistakes is a flexible two-column Jekyll theme. Perfect for hosting your personal site, blog, or portfolio on GitHub or self-hosting on your own server. As the name implies --- styling is purposely minimalistic to be enhanced and customized by you :smile:.
+![icon](/image/logo/adely_logo_Test.png)
 
-{% include gallery id="layouts_gallery" caption="Examples of included layouts `splash`, `single`, and `archive`." %}
-
-[Install the Theme]({{ "/docs/quick-start-guide/" | relative_url }}){: .btn .btn--success .btn--large}
+더 나은 내일을 위해 노력하고 있는 개발자입니다.
+기술 스택 : C#, C++, Unity, Unreal, Python3
+경력사항 : LnkLogicKorea(라이브 서비스 프로그래머 / 1년 2개월)
 
 ## Notable Features
 
