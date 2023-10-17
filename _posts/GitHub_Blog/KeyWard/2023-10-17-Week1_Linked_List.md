@@ -1,6 +1,6 @@
 ---
 title: "연결 리스트"
-last_modified_at: "2023-10-16T22:50:00"
+last_modified_at: "2023-10-17T10:50:00"
 categories:
   - 크래프톤 정글
 tags:
