@@ -1,11 +1,11 @@
 ---
 title: "람다(Python)"
-last_modified_at: "2023-10-17T16:00:00"
+last_modified_at: "2023-10-17T22:00:00"
 categories:
   - 파이썬
 tags:
   - 파이썬
-  - 람다
+  - 람다식
 ---
 
 ## 람다 함수(Lambda Function)
@@ -43,4 +43,3 @@ tags:
     # 길이, 사전순서
     resultString.sort(key= lambda item : (len(item),item))
   ```
-ㅁㅁㅁ
