@@ -65,19 +65,20 @@ tags:
     배열보다 고려된다고 함
 
 ## 연결 리스트 구현 예시(Python)
-  - Node 클래스
+  - Node 클래스<br>
+
   ```
     from __future__ import annotations # 변수 주석을 간단하게 사용하기 위한 import
-from typing import Any,Type
+    from typing import Any,Type
 
-class Node:
-    """노드용 클래스"""
-    def __init__(self,data : Any = None,next : Node = None):
-        self.data = data # 데이터
-        self.next = next # 뒤쪽 포인터
+    class Node:
+        """노드용 클래스"""
+        def __init__(self,data : Any = None,next : Node = None):
+           self.data = data # 데이터
+           self.next = next # 뒤쪽 포인터
   ```
 
-  - LinkedList 클래스
+  - LinkedList 클래스<br>
   ```
   
 class LinkedList:
@@ -205,7 +206,7 @@ class LinkedList:
         return LinkedListIterator(self.head)
   ```
 
-  linkedListIterator 클래스
+  - linkedListIterator 클래스<br>
   ```
   # 이터레이터용 함수가 있어야
 # 해당 클래스를 '이터러블'이 가능하다고 여겨
