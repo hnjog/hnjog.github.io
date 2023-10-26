@@ -75,7 +75,8 @@ tags:
   (물론 모든 '히위' 문제를 평가할 필요가 없다면<br>
   top-down의 성능이 더 좋을때도 있으니 case by case)  
 
- - 예시코드(Python) : 백준 2748
+ - 예시코드(Python) : 백준 2748<br>
+
  ```
 import sys
 
@@ -122,7 +123,8 @@ print(finboFunc(num))
 
 
 
-- 예시코드(Python) : 백준 11047
+- 예시코드(Python) : 백준 11047<br>
+
 ```
 import sys
 
