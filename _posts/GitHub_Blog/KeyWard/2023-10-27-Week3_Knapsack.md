@@ -32,6 +32,7 @@ tags:
   일반적인 방법으로 푼다면 O(2^n)의 시간복잡도를 가지기에<br>
   문제의 유형에 따라서 필요한 알고리즘을 선택해서 푼다
 
+
 ## 0/1 배낭 문제의 해법
  ![lcs](https://user-images.githubusercontent.com/43630972/278551516-87179ece-a8b7-40ef-bc9c-46ede4155968.png){: width="50%" height="50%"}<br><br>
  [출처] : <https://gsmesie692.tistory.com/113><br><br>
@@ -72,5 +73,5 @@ tags:
        '탐욕'적으로 선택하여도 '전체적 최적해'가 보장이 되는 상황이다
       
 
-## 문재 이해에 도움이 된 사이트
+## 이해에 도움이 된 사이트
  - https://gsmesie692.tistory.com/113
