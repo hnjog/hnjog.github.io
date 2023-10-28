@@ -133,5 +133,155 @@ tags:
   2. 포인터 주소가 '유효'한가 확인하기 (if a != NULL)
   3. 댕글링 포인터를 막기 위하여 (free()이후 유효하지 못한 주소를 가리키는 경우를 막음)
  
+## 포인터와 배열
+  배열 변수는 '포인터'와 아주 유사하다<br>
 
- 
+  int nums[3] = {0,1,2};<br>
+  int* ptr = NULL;<br>
+
+  ptr = nums; <br>
+  ptr = &nums[0]; // 위와 같음 <br>
+
+  이 때, ptr은 nums의 첫번째 요소인<br>
+  0을 가리킨다<br>
+
+  * 배열은 뭉쳐있는 데이터의 집합이기에<br>
+    주소와 자료형의 크기만 알면<br>
+    포인터로 직접 배열의 요소들을 건드릴 수 있음<br>
+
+    ex) ptr++; <br>
+        (nums의 0번째 요소에서 1번째요소를 가리키도록 함)<br>
+        (ptr += 1 과도 같은데,<br>
+        포인터의 경우, + - 와 관련된 정수 연산은<br>
+        내부에서 '포인터가 가리키는 타입의 크기'로 변환되어 작동한다)<br>
+    
+       => 그렇기에 아래의 두 포인터는 둘다 nums의 3번째 요소를 가리킨다는 의미이다<br>
+       int* p1 = nums + 2;<br>
+       int* p2 = &nums[2];<br>
+
+      또한 이런것도 가능하다<br>
+      int* p1 = nums;<br>
+      int nums2 = p1[2];<br>
+      (포인터에서 [] 배열 첨자 연산자를 사용 가능하다)
+
+  물론 배열과 포인터의 차이점 역시 존재한다<br>
+  -  sizeof() 연산자의 반환값<br>
+    포인터는 포인터의 크기를 반환하지만,<br>
+    배열은 '총 배열의 크기'를 반환한다
+  -  문자열 초기화<br>
+    char d1[] = "friday";<br>
+    char* d2 = "friday";<br>
+
+      d1은 '영역'에 "friday"가 저장되어 문자열을 수정해도 괜찮지만<br>
+      d2의 경우는 '데이터 영역'에서 가져온 것이기에,<br>
+      수정할 수 없거나(컴파일 오류),<br>
+      정의되지 않은 결과를 일으킬 수 있음<br>
+
+  -  대입<br>
+    포인터의 경우, 새로운 '주소값'을 대입할 수 있지만,<br>
+    배열의 경우는, 할 수 없음<br>
+
+  -  포인터 산술 연산<br>
+    포인터는 ++,-- 등의 연산이 가능하지만<br>
+    배열은 불가능<br>
+
+## const 포인터
+  일반적으로 '수정'을 막으려면 const 키워드를 사용<br>
+  
+  포인터의 경우도, const 키워드를 이용할 수 있다!<br>
+  그것도 무려 3가지 방식으로!!!<br>
+
+  - 주소를 보호하는 const 포인터<br>
+    <타입>* const 변수<br>
+    : 오른쪽에서부터 읽는다고 생각하자....<br>
+    변수는 const 포인터인데 그게 '타입'을 가리킨다<br>
+
+```
+    int* const p = &num1;
+    p = &num2; // 컴파일 오류
+    p++;       // 컴파일 오류
+```
+
+  - 값을 보호하는 const를 가리키는 포인터<br>
+    const <타입>* 변수<br>
+    : int* 가 가리키는 것이 const<br>
+```
+    const int* p = &num ;
+    *p = 0; // 컴파일 오류
+```
+  - 둘 다 지키는 const * const<br>
+    const <타입>* const 변수
+
+
+## 함수 포인터
+  함수를 호출하는 것도 결국 '메모리 주소'로 하는 것<br>
+  따라서 '함수의 주솟값'을 받아 호출시키는 것도 가능함<br>
+
+  예시를 먼저 보자
+  ```
+  double add(double x, double y){
+    return x+y;
+  }
+
+  // 함수 포인터 변수 선언
+  double (* func)(double,double) = add;
+
+  // 함수 포인터를 '매개변수'로 받을 때의 사용
+  // 함수 선언
+  double calc(double,double, double (*)(double,double));
+
+  // 함수 매개변수
+  double calc(double x, double y, double(* func)(double,double))
+  {
+    return func(x,y);
+  }
+
+  ```
+
+  함수 포인터를 읽을때 한가지 팁이 있다면,<br>
+  '오른쪽 왼쪽 규칙'을 통해 읽는 것이다<br>
+
+  func 변수명 기준으로 '괄호'에 부딪힐 때마다,<br>
+  '읽는 방향'을 바꾸는 방식<br>
+
+  func 는 포인터이며, (*)<br>
+  func 는 두 개의 double형 매개 변수를 받는 함수 포인터이며,((double,double))<br>
+  func 는 두 개의 double형 매개 변수를 받아 double을 반환하는 함수 포인터이다(double)<br>
+
+## 이중 포인터, 다중 포인터
+ 포인터가 뭐라고?<br>
+ : '주소를 저장하는 변수'<br>
+
+ 그렇다면 '포인터의 포인터'는 무엇일까??<br>
+ '변수의 주소를 저장한 변수의 주소를 저장한 변수'<br>
+  ~~(동어 반복이 아니다)~~<br>
+
+ 아래의 예시는 '이중 포인터'이다
+
+```
+  int num1 = 10;
+  int num2 = 20;
+  int* p1 = &num1;
+  int* p2 = &num2;
+  int** pp2 = &p1;
+
+  printf("%d\n",**pp2); // <- 10을 가리킴
+  *pp2 = p2;            // pp2가 역참조한 값 (p1)이 p2와 같은 주소를 가리키도록 수정
+
+  printf("%d\n",*p1);  // <- 20
+
+```
+
+  당연하게도,<br>
+  이중 포인터를 가리키는 포인터가 있을 수도 있으며<br>
+  이는 '삼중 포인터'라고 한다<br>
+  (보통은 삼중 포인터까지는 가끔 사용하고)<br>
+  (사중 포인터 이상은 거의 안씀)
+
+  그런데 이런걸 왜 사용할까??<br>
+  '2차원' 배열이 2중 포인터와 비슷하다<br>
+  (아니면 1차원 포인터 배열이랑도 비슷)<br>
+  더 많은 '연관된 값'을 '배열'을 통해 사용할 수 있음<br>
+
+  ![double_pointer](https://user-images.githubusercontent.com/43630972/278785097-7943d651-a9d0-41ed-9db1-0e91a3a3588d.png){: width="70%" height="70%"}<br><br>
+  [출처] : <https://kasimov.korea.ac.kr/dokuwiki/lib/exe/detail.php/activity/public/2021/cpp/%ED%8F%AC%EC%9D%B8%ED%84%B06.png?id=activity%3Apublic%3A2021%3Acpp%3A210713>
