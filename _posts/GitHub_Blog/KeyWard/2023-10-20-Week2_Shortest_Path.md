@@ -404,12 +404,12 @@ def aStar(maze, start, end):
 ## 플로이드 - 워셜 알고리즘의 이해
   sp(i,j,k-1) : 1~ k-1 노드를 거치는 i->j 최단 거리<br>
   sp(i,j,k) : 위 공식에 '추가적'으로 k노드도 거치는 것을 고려<br>
-  1. 더 잛은 거리를 못 찾음(= 기존 경로를 그대로 이용)
+  1. 더 짧은 거리를 못 찾음(= 기존 경로를 그대로 이용)
 <br>
   sp(i,j,k) = sp(i,j,k-1)<br>
   2. 더 짧은 거리를 찾음(=k 를 따라 이동해야 함)<br>
-  sp(i,k,k) = sp(i,j,k-1) + sp(k,j,k-1)<br>
-  => sp(i,j,k) = min(sp(i,j,k-1),sp(i,j,k-1) + sp(k,j,k-1))
+  sp(i,j,k) = sp(i,k,k-1) + sp(k,j,k-1)<br>
+  => sp(i,j,k) = min(sp(i,j,k-1),sp(i,k,k-1) + sp(k,j,k-1))
 
 ## 플로이드 - 워셜 복잡도
   시간 복잡도<br>
