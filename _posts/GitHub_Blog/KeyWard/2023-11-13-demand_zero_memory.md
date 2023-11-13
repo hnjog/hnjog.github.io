@@ -1,6 +1,6 @@
 ---
 title: "demand zero memory"
-last_modified_at: "2023-11-13T19:30:00"
+last_modified_at: "2023-11-13T20:30:00"
 categories:
   - 크래프톤 정글
   - CS
@@ -26,7 +26,7 @@ tags:
  페이징 개념에 따라<br>
  'Page fault'가 발생한 경우,<br>
  운영 체제는 페이지 테이블을 업데이트 하지만,<br>
- 해당 운영체제가 'demand zero memory'를 사용중이면<br>
+ 해당 운영체제가 'demand zero memory' 전략을 사용하는 경우<br>
  실제로 '메인 메모리'(물리적 메모리)에<br>
  할당하지는 않는다<br>
 
@@ -41,3 +41,4 @@ tags:
  다만, '초기화'가 지연되기에 <br>
  발생하는 작업의 지연 및 오버헤드가 발생할 수도 있으니<br>
  해당 내용을 유의하는 것이 좋다<br>
+ (그렇다고 OS가 반드시 이 전략을 사용하는 것도 아니다)
