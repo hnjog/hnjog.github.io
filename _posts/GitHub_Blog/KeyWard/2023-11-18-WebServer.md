@@ -1,6 +1,6 @@
 ---
 title: "CGI, 웹 서버, MIME"
-last_modified_at: "2023-11-17T22:30:00"
+last_modified_at: "2023-11-18T10:10:00"
 categories:
   - 크래프톤 정글
   - CS
