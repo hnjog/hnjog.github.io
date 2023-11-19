@@ -341,4 +341,54 @@ tags:
    4. Application : 메시지 or 데이터
 
 
+## 네트워크 스택
+ 예를 들어 Write() 함수를 호출한다 가정하였을 때,<br>
+ write()는 지정된 소켓을 찾아(파일 디스크립터에 지정된)<br>
+ 해당 소켓에 데이터를 쓰게 된다<br>
+ 다만 소켓을 보내주는 것은 write() 함수의 역할이 아니다<br>
 
+ 그렇다면 소켓은 대체 누가 보내주는 걸까?<br><br>
+
+ 정답은 바로 네트워크 스택이다<br>
+ 마치 별도의 '주체'처럼 보이지만,<br>
+ 사실 OS 내부에 존재하는 '프로토콜 구현'의 집합이다<br>
+ 
+ (위에서 언급한 TCP/IP 스택이 실제로 사용된다 라는 의미는<br>
+ TCP/IP의 프로토콜 들이 OS 내부에 구현되어 있으며<br>
+ OS가 소켓을 보낼 때, 이러한 구현부를 이용하기 때문이라 생각한다)<br>
+
+ 네트워크 스택은<br>
+ 크게 User, Kernel, Device 로 나뉘며<br>
+ 세분화 하면<br>
+ User : Application<br>
+ Kernel : File<br>
+          Sockets<br>
+          TCP<br>
+          IP<br>
+          Ethernet<br>
+          Driver<br>
+ Device : NIC<br>
+
+ Application 에서 Write() 나 Read() 를 호출하면<br>
+ 커널에서는<br>
+ File로 파일 디스크립터를 판단하고<br>
+ Sockets 에선 소켓에 데이터를 복사하거나 추가한다<br>
+
+ TCP,IP,Ethernet 에서는 각각 프로토콜에 맞는 헤더 데이터를 붙인다<br>
+
+ 이후 Driver 에서<br>
+ NIC에게 패킷을 전송하라고 요청한다<br>
+
+ NIC(Network Interface Card)는<br>
+ 패킷을 송수신한다<br>
+ (이 때, CPU에 인터럽트를 발생시킨다)<br>
+
+ 참고로 application 에서<br>
+ write나 read를 호출한다고 반드시 해당 패킷이 바로 전송되는 것이 아니며,<br>
+ 해당 레이어에선 언제 패킷이 송수신 되는지 파악하긴 어렵다<br>
+ 
+ 추가적으로 TCP를 수행하는 경우는,<br>
+ '연결 유지'를 파악하기 위하여 'Timer'를 사용하는 경우도 있다<br>
+ (Timer Interrupt를 발생시켜 연결을 끊기 위함)<br>
+
+ [네트워크 스택에 관련된 좋은 사이트]<https://d2.naver.com/helloworld/47667>
