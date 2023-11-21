@@ -1,5 +1,3 @@
-
-
 ---
 title: "Network Layer"
 last_modified_at: "2023-11-20T11:30:00"
