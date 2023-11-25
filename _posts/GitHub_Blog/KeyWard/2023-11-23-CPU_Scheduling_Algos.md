@@ -1,5 +1,5 @@
 ---
-title: "Process 와 Thread"
+title: "CPU 스케쥴링 알고리즘"
 last_modified_at: "2023-11-23T22:20:00"
 categories:
   - 크래프톤 정글
