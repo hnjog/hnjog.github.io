@@ -64,6 +64,9 @@ tags:
    (null return이 아니라 그냥 assert 해버렸다)<br>
    해당 함수를 호출 시, list_empty를 따로 호출해서 예외처리를 하였다<br>
 
+  다만 priority 부분 중, 현재는<br>
+  thread의 ready_list 부분만 처리한 것이며,<br>
+  동기화 도구에 따른 문제가 아직 남아있는 상황이다<br>
 
  ![priority_S](https://private-user-images.githubusercontent.com/43630972/285708078-4d59cfa4-ef4c-4389-bb8e-5c9f396bc825.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE3MDEwNTM2NjMsIm5iZiI6MTcwMTA1MzM2MywicGF0aCI6Ii80MzYzMDk3Mi8yODU3MDgwNzgtNGQ1OWNmYTQtZWY0Yy00Mzg5LWJiOGUtNWM5ZjM5NmJjODI1LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzExMjclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMTI3VDAyNDkyM1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTFhNjYyODhhYTUyYjEyNjE3Njc2NTcyOTE3Y2I1MGU3M2U4NmU5NmEzZjk0OWNlYWY2NmY0MWVhZWM2MTNmYzAmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.1HizUCqagda7AlUGEmqSUoOUEaUtb6lzMKW6NbMspaw)
 
