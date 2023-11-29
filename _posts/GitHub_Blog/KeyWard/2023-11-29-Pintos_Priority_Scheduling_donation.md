@@ -1,5 +1,5 @@
 ---
-title: "핀토스 1주차 - Priority_Scheduling"
+title: "핀토스 1주차 - Priority_Scheduling Donation"
 last_modified_at: "2023-11-29T14:40:00"
 categories:
   - 크래프톤 정글
