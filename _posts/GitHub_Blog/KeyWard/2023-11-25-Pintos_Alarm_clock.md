@@ -62,6 +62,6 @@ tags:
    (이중 연결 리스트 기준이며, 디버깅으로 보니 이상한 곳을 가리킨다는 것을 뒤늦게 알았다)<br>
  - timer 의 tick 전역변수는 하드웨어 인터럽트로 인해 증가한다(Timer Interrupt)
 
- ![alarms](https://private-user-images.githubusercontent.com/43630972/285573819-a3f6723b-a65a-485f-98f0-721a6885e4a4.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE3MDA5MDAyOTEsIm5iZiI6MTcwMDg5OTk5MSwicGF0aCI6Ii80MzYzMDk3Mi8yODU1NzM4MTktYTNmNjcyM2ItYTY1YS00ODVmLTk4ZjAtNzIxYTY4ODVlNGE0LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzExMjUlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMTI1VDA4MTMxMVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTc5M2IxOTM2ZDg2ZWFmNmRmMjc4NmY2M2I4NWI2OGQ3MmJhYTRkZWFmOWU3ZjMzYmE3M2NmZmFkNjEwZjdlMWImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.FMyy9FjI22JBfgdXeHTYjub03ZpKiGqWSH7lBA635FA)
+![Alarm_Pass](https://github.com/hnjog/hnjog.github.io/assets/43630972/a3f6723b-a65a-485f-98f0-721a6885e4a4)
 
  [GitHub] : <https://github.com/hnjog/pintos-kaist/tree/hnjog>
