@@ -53,45 +53,45 @@ tags:
  (우선순위를 시간에 따라 조정하기에 이전에 <br>
  구현한 Priority Donation 관련 부분은 Feedback 환경에선 무시되도록 한다)<br>
 
- priority : 우선순위<br>
- priority = PRI_MAX - (recent_cpu /4) - (nice * 2) <br>
- 현재 자신의 'CPU' 사용량과 nice 수치에 따라 정해진다<br>
+ - priority : 우선순위<br>
+  priority = PRI_MAX - (recent_cpu /4) - (nice * 2) <br>
+  현재 자신의 'CPU' 사용량과 nice 수치에 따라 정해진다<br>
 
- nice : 스레드의 '양보 성향' 수치<br>
+ - nice : 스레드의 '양보 성향' 수치<br>
  ~~(설명으로는 CPU를 '양보'하기 때문에 'nice'라는 용어가 붙었다나...)~~<br>
  -20~20 의 수치를 가지며,<br>
  수치가 낮다면(음수), 높은 우선순위를 가지며,<br>
  수치가 높으면(양수), 낮은 우선순위를 가지게 된다<br>
 
- recent_cpu : 해당 스레드의 '최근' CPU 작업 소요 시간<br>
+ - recent_cpu : 해당 스레드의 '최근' CPU 작업 소요 시간<br>
  타이머로 현재 진행중인 스레드의 recent_cpu를 증가시키며,<br>
  decay_factor (감쇠) 를 통해 매초마다 recent_cpu를 감소시킨다<br>
  또한, nice를 더하여 recent_cpu를 조정한다<br>
 
- recent_cpu = decay * recent_cpu + nice<br>
+    recent_cpu = decay * recent_cpu + nice<br>
  
- decay : 감쇠<br>
+ - decay : 감쇠<br>
  무거운 부하가 걸릴수록 감쇠는 1에 가까워지며,<br>
  가벼울수록 decay는 0에 가까워진다<br>
  (이는 recent_cpu에 영향을 주며<br>
  현재 시스템의 부하가 클수록, recent_cpu의 값이 커져<br>
  현재 스레드의 우선순위를 낮추어 스레드 교환을 유도한다)<br>
 
- decay = (2 * load_average) / (2 * load_average + 1)<br>
+    decay = (2 * load_average) / (2 * load_average + 1)<br>
 
- load_average : 최근 1분동안 수행이 준비된 작업의 평균<br>
+ - load_average : 최근 1분동안 수행이 준비된 작업의 평균<br>
  (이는 지수 가중 이동 평균 (Exponetially Weighted Moving Average) 방식을 사용하여 계산됨)<br>
 
- EMA(t) = (1 - a) * EMA(t-1) + a * x(t)<br>
- x(t) : 현재 시점의 데이터 포인트<br>
+    EMA(t) = (1 - a) * EMA(t-1) + a * x(t)<br>
+  x(t) : 현재 시점의 데이터 포인트<br>
  a : 스무딩 파라미터 (데이터에 부여되는 가중치를 제어하는 값이며 0~1 사이의 값)<br>
 
- load_average = (59/60) * load_average + (1/60) * ready_threads<br>
+    load_average = (59/60) * load_average + (1/60) * ready_threads<br>
 
- load_average 의 ready_thread는<br>
+    load_average 의 ready_thread는<br>
  현재 '실행이 준비된' 프로세스를 의미한다<br>
 
- load_average는 ready_thread에 영향을 받되,<br>
+    load_average는 ready_thread에 영향을 받되,<br>
  기존의 값을 유지하기에, 데이터의 변화에 따른 평균이 완화되어 작동한다<br>
  (대기하는 스레드가 많을수록 load_average는 점점 늘어나며,<br>
  대기하는 스레드가 없다면, load_average는 점점 줄어든다)<br>
