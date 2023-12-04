@@ -44,8 +44,9 @@ tags:
  작업 큐 하나로 구현한 방식은<br>
  작업에 '우선순위'를 부여하되,<br>
  '현재 상황'에 맞도록 적절히 우선순위를 조정하는 것이다<br>
- (현재 구현한 것이 이름을 붙이자면 Single Level Feedback Queue 가 아닐까)<br>
- (우선순위 기반이다)<br>
+ (우선순위 기반의 스케쥴링 방식이다)<br>
+ ~~(현재 구현한 것이 이름을 붙이자면 Single Level Feedback Queue 가 아닐까)~~<br>
+ 
 
  이러한 'Feedback'을 주기 위하여 고려되는 요소는<br>
  recent_cpu , load_average, nice 등이 존재한다<br>
