@@ -44,3 +44,20 @@ tags:
   - 제어 x
 
 <img width="200" alt="gfg-312" src="https://github.com/hnjog/hnjog.github.io/assets/43630972/64c16591-01fc-47c0-9589-1ef1bdf95e8b">
+
+## tmi
+ - rax?<br>
+  : 주로 함수의 반환 값(return Value)을 저장하는 레지스터<br>
+    (x86 환경)<br>
+    
+    0~63 을 저장하는 경우 rax 레지스터를 사용하며<br>
+    같은 용도지만 더 작은 크기만 필요한 경우를<br>
+    eax(0~31, 4Byte)<br>
+    ax(0~15, 2Byte)<br>
+    al(0~7, 1Byte)<br>
+    이라 각각 말한다
+
+    데이터를 임시로 저장하는 용도,<br>
+    함수의 반환값을 저장하는 용도,<br>
+    ALU 의 피연산자로 이용하는 용도 등으로 사용된다<br>
+  
