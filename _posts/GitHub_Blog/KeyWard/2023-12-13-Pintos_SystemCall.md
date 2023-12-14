@@ -16,19 +16,36 @@ tags:
 
 ## system call
  정말 정신없었던 1.5주 였던 것 같다<br>
+ 반에 코로나가 유행하였고,<br>
+ 개인적으로 컨디션이 좋지 않아<br>
+ til도 잘 작성하지 못한 것 같다<br>
  
  '커널 공간'에서 진행되는 <br>
  '사용자 공간'에 대한 처리 방식<br>
- 즉, '시스템 콜'에 대한 이해가 부쩍 는듯 하다<br>
+ 즉, '시스템 콜'에 대한 이해가 부쩍는 듯 하다<br>
 
  사용자 공간은 각각의 'process 공간'을 가지되,<br>
  커널 공간은 해당하는 프로세스의 '가상 주소 공간'에 포함되지 않는다<br>
- (여담으로 스레드의 위치(thread_current())는 커널 공간에 위치)
+ (여담으로 스레드의 위치(thread_current())는 커널 공간에 위치)<br>
+
+ main 함수의 스택 프레임에 직접<br>
+ argument 인자들을 세팅해주는 것은 아주 흥미로웠다<br>
+ 특히, 함수가 호출될 때 매개변수를 전달하는 방식을<br>
+ 직접 구현(스택 포인터를 늘려, 해당 위치에 값을 써준다)해봄으로서<br>
+ OS의 소중함(?)을 느낄 수 있었던 것 같다<br>
+
+ 또한 '시스템 콜'을 통하여<br>
+ userMode -> Curnel Mode 를 캐치하는 부분(system call hander),<br>
+ 역시 OS 내부의 커널 코드가 해준다는 부분을 직접 작성해보니<br>
+ OS의 '추상화'에 대하여 좀 더 이해할 수 있었다<br>
+ (실제로 이 내용을 공부하기 전까지, OS 역시 코드로 구현되었음을 알았지만<br>
+  PintOS에서 시스템콜을 구현해보니, '이런 역할을 해주겠네'라는 추상화의<br>
+  강력함을 느낄 수 있었다)<br>
 
 ![user_prog_test](https://github.com/hnjog/hnjog.github.io/assets/43630972/8c39047d-a9e1-467c-828b-ae7594773b84)
 
 
-## try and Error
+## Try and Error
 ![elem 및 semaphore 데이터 이상함](https://github.com/hnjog/hnjog.github.io/assets/43630972/c4d8a5b5-65c2-4e20-bde1-826cfe3b8683)
 
  해당 문제가 발생한 것은 wait에 fd table 생성 및 running file을 생성한 시점이다<br>
