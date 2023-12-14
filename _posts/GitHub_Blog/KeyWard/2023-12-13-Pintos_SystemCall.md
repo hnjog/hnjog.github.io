@@ -88,17 +88,18 @@ tags:
    해당 palloc_free의 위치를 sucess == false 내부로 옮겨줌<br>
 
    ```
+   //palloc_free_page (file_name);
    if (!success) {
 	   palloc_free_page (file_name);
 		return -1;
 	}
    ```
 
-   file_name이 argv와 같은 공간을 사용하기에,<br>
-   올바르지 않은 결과값이 전달될 수 있음<br>
-   (다만, 해당 방식이 직접적인 연관이 없을 수 있다고 생각)<br>
+   file_name이 argv와 같은 공간(주소)을 사용하기에,<br>
+   올바르지 않은 인자값이 전달될 수 있음<br>
+
    (스택에 값을 '써주고' 해당 file_name을 free 해주는 것도<br>
-   고려되나, 해당 문제와 연관이 없어 보였음)<br>
+   고려되나, 해당 문제와 직접적인 연관이 없어 보였기에 패스)<br>
 
  - 기존 코드가 load() 내부에서 변수와 stack을 이용하였기에<br>
    load 스택 프레임이 해제되며, 전달하는 argument에 영향을 주었음<br>
@@ -112,7 +113,8 @@ tags:
    다만, 위 사진의 문제가 확정적으로 일어났고,<br>
    근본적으로 이것이 데이터에 어떠한 영향을 주는지<br>
    판단하기 어려웠다<br>
-   
- 
-   
-   
+
+   현재 시점에서 '해결'은 하였지만,<br>
+   구체적으로 argument passing이<br>
+   'semaphore'를 사용한 wait 이후에 영향을 미치는지에 대하여<br>
+   짐작할 수 없었다<br>
