@@ -12,7 +12,8 @@ tags:
 ---
 
 ## 발견한 문제
-![unrefer](https://github.com/hnjog/hnjog.github.io/assets/43630972/74c9ba2a-47d2-450a-86dd-2da967993de9)
+![unrefer](https://github.com/hnjog/hnjog.github.io/assets/43630972/e284df1b-e853-4b3a-be23-329f1d68a86f)
+
 
 해당 상황은 mmap 시스템 콜을 구현하는 중<br>
 load_segment의 코드와 유사하여 해당 부분을 사용하던 중<br>
