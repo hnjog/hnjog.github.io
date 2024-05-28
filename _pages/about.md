@@ -3,11 +3,11 @@ permalink: /About/
 title: "About Me"
 excerpt: "Minimal Mistakes is a flexible two-column Jekyll theme."
 layouts_gallery:
-  - url: /image/career/Red_Stone.jpg
-    image_path: /image/career/Red_Stone.jpg
+  - url: /image/Career/Red_Stone.jpg
+    image_path: /image/Career/Red_Stone.jpg
     alt: "붉은 보석 라이브"
-  - url: /image/career/arVeluga.png
-    image_path: /image/career/arVeluga.png
+  - url: /image/Career/arVeluga.png
+    image_path: /image/Career/arVeluga.png
     alt: "vuzix app contest"
 
 last_modified_at: 2022-05-27T11:59:26-04:00
