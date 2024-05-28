@@ -3,11 +3,11 @@ main:
   #- title: "Home"
   #  url: "/"
   - title: "Introduce"
-    url: /about/
+    url: "/about/"
   - title: "Category"
     url: "/categories/"
   - title: "Tags"
-    url: /tags/
+    url: "/tags/"
   #- title: "Quick-Start Guide"
   #  url: https://mmistakes.github.io/minimal-mistakes/docs/quick-start-guide/
   # - title: "About"
