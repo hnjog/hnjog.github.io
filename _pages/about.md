@@ -22,4 +22,4 @@ toc_lable: "MYSELF"
 기술 스택 : C#, C++, Unity, Unreal, Python3
 경력사항 : LnkLogicKorea(라이브 서비스 프로그래머 / 1년 2개월)
 
-{% include gallery id="layouts_gallery" caption="라이브 서비스한 `붉은 보석`,vuzix app constest에서 수상받은 `ar Veluga`." %}
+{% include gallery.html id="layouts_gallery" caption="라이브 서비스한 `붉은 보석`,vuzix app constest에서 수상받은 `ar Veluga`." %}
