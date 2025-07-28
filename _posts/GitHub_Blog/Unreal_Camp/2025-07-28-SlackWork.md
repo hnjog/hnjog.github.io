@@ -89,10 +89,12 @@ Player는 Pawn이였다<br>
 ## 마무리
 
 <iframe width="560" height="315"
-    src="https://youtu.be/5EBv1oWAd1I"
+    src="https://www.youtube.com/embed/5EBv1oWAd1I"
     frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
     allowfullscreen>
 </iframe>
+
 
 box Collision의 범위에 들어가면<br>
 그것이 player인지 체크하고<br>
