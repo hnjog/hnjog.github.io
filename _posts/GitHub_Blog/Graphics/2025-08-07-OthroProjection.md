@@ -1,6 +1,6 @@
 ---
 title: "벡터에 대한 추가 내용 2"
-last_modified_at: "2025-08-06T16:30:00"
+last_modified_at: "2025-08-07T18:30:00"
 categories:
   - 수학
 tags:
