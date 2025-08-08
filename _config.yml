@@ -16,6 +16,7 @@ minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt"
 
 # Site Settings
 locale                   : "ko-KR"
+future                   : true
 title                    : "싱글벙글 개발자 Blog"
 title_separator          : "-"
 subtitle                 : "/훌쩍훌쩍" # site tagline that appears below site title in masthead
