@@ -1,6 +1,6 @@
 ---
 title: "배열 포인터"
-last_modified_at: "2025-08-13T16:00:00"
+last_modified_at: "2025-08-13T15:30:00"
 categories:
   - C++
 tags:
