@@ -18,7 +18,7 @@ tags:
 기능을 추가하려 하였다<br>
 
 그런데 Jekyll 기반에는 기본 댓글 엔진이 없음<br>
-그렇기에 [giscus](https://giscus.app/ko) 라는 외부 플러그인을 사용하였다<br>
+그렇기에 [giscus](https://giscus.app/ko){:target="_blank" rel="noopener noreferrer"} 라는 외부 플러그인을 사용하였다<br>
 
 
 ## 기본 설치 방법
@@ -28,7 +28,7 @@ tags:
 
 붉은 사각형의 부분에서 알 수 있듯<br>
 1. 만들려는 해당 저장소가 'public' 설정이 되어 있어야 하고<br>
-2. [giscus 앱](https://github.com/apps/giscus)이 설치되어야 하며<br>
+2. [giscus 앱](https://github.com/apps/giscus){:target="_blank" rel="noopener noreferrer"}이 설치되어야 하며<br>
 3. Discussions 기능이 활성화 되어 있어야 한다
 
 <img width="689" height="50" alt="Image" src="https://github.com/user-attachments/assets/e5cc3590-fdb9-4e9f-afbc-799bd7a4b186" /><br>
@@ -49,7 +49,7 @@ tags:
 ### giscus에 대한 Access 설정
 
 설치를 완료한 경우<br>
-[여기](https://github.com/apps/giscus)서 Install이 Configure 버튼으로 바뀐다<br>
+[여기](https://github.com/apps/giscus){:target="_blank" rel="noopener noreferrer"}서 Install이 Configure 버튼으로 바뀐다<br>
 
 이후 자신의 계정으로 들어간 이후<br>
 
