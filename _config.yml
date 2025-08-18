@@ -46,7 +46,6 @@ comments:
     issue_term           : # "pathname" (default)
   giscus:
     repo_id              : "R_kgDOKf5nRQ"
-    category_name        : "Comments"
     category_id          : "DIC_kwDOKf5nRc4CuSQd"
     discussion_term      : "pathname"
     reactions_enabled    : 1
