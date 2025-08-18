@@ -49,7 +49,7 @@ comments:
     category_id          : "DIC_kwDOKf5nRc4CuSQd"
     discussion_term      : "pathname"
     reactions_enabled    : 1
-    theme                : "preferred_color_scheme"
+    theme                : "light"
     lang                 : "ko"
   staticman:
     branch               : # "master"
