@@ -1,5 +1,6 @@
 ---
 title: "Direct X InitDirect 2"
+date : "2025-08-21 12:30:00 +0900"
 last_modified_at: "2025-08-21T12:30:00"
 categories:
   - Direct X

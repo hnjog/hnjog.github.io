@@ -1,5 +1,6 @@
 ---
 title: "Direct X RunDirect"
+date : "2025-08-21 16:30:00 +0900"
 last_modified_at: "2025-08-21T16:30:00"
 categories:
   - Direct X
