@@ -1,5 +1,5 @@
 ---
-title: "Direct X InitDirect"
+title: "Direct X RunDirect"
 last_modified_at: "2025-08-21T16:30:00"
 categories:
   - Direct X
