@@ -1,6 +1,6 @@
 ---
-title: "Direct X InitDirect"
-last_modified_at: "2025-08-21T14:30:00"
+title: "Direct X InitDirect 2"
+last_modified_at: "2025-08-21T12:30:00"
 categories:
   - Direct X
 tags:
