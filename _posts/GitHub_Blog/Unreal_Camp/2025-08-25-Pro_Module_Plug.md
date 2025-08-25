@@ -36,7 +36,88 @@ UE4/5 의 빌드 단위이다<br>
 특정한 '기능적 집합'으로 묶어둔 것<br>
 (렌더링, AI, Network 등)<br>
 
-예시적인 Build.cs<br>
+보통 게임을 만들게 되면 하나가 생긴다<br>
+
+```
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#include "Samples.h"
+
+#include"SampleLogChannels.h"
+#include "Modules/ModuleManager.h"
+
+class SamplesModule : public FDefaultGameModuleImpl
+{
+	// 모듈 : h + cpp 로 이루어진 최소한의 기능
+	// 플러그인 : 다양한 실험적, 외부 기능 (모듈을 여러개 포함할 수 있음)
+	// 프로젝트 : 모듈 + 플러그인 으로 이루어지는 전체 구조
+public:
+	virtual void StartupModule() override;
+	virtual void ShutdownModule() override;
+};
+
+void SamplesModule::StartupModule()
+{
+	FDefaultGameModuleImpl::StartupModule();
+
+	UE_LOG(LogSample, Warning, TEXT("StartUpModule!"));
+}
+
+void SamplesModule::ShutdownModule()
+{
+	FDefaultGameModuleImpl::ShutdownModule();
+}
+
+// IMPLEMENT_PRIMARY_GAME_MODULE 은 해당 엔진 내에서 하나만 존재해야 함 -> 핵심이 되는 모듈에게만 사용할것
+// 모듈마다 이러한 IMPLEMENT 시리즈를 하나씩은 설정해 줘야 함
+IMPLEMENT_PRIMARY_GAME_MODULE(SamplesModule, Samples, "Samples" );
+```
+
+- IMPLEMENT_PRIMARY_GAME_MODULE<br>
+  : 해당 게임의 메인 모듈을 등록하는 매크로<br>
+  (프로그램 진입점을 정하듯, 해당 게임 프로젝트의 메인이 될 모듈 설정)<br>
+  (메인 엔트리 지점을 설정 - C++ 의 int main()과 비슷하다)<br>
+
+```
+언리얼의 간략한 실행 흐름
+
+[OS] 
+   ↓
+ WinMain()   ← (플랫폼별 진입점, 유저가 안 건드려도 됨)
+   ↓
+ GuardedMain()
+   ↓
+ LaunchEngineLoop("Samples")
+   ↓
+ Load Module: "Samples"
+   ↓
+ ┌─────────────────────────────┐
+ │ SamplesModule (Primary)     │
+ │   ├─ StartupModule()        │
+ │   └─ ShutdownModule()       │
+ └─────────────────────────────┘
+   ↓
+ GameInstance / World / GameMode 초기화
+   ↓
+ [게임 루프 시작!]
+
+```
+
+- 보통 하나의 프로젝트(.uproject)에서 메인 모듈(Primary)은 하나<br>
+  (즉 위 매크로를 2번 설정하면 빌드 중에 에러가 발생한다)<br>
+  (컴파일 에러가 아니므로 찾기 힘들어진다...)<br>
+  (반드시 하나는 설정해야 함)<br>
+
+- 엔진이 '게임 루프'를 돌리기 전에<br>
+  '내 프로젝트'가 무엇인지를 알아야 하기에 설정해야 한다<br>
+  (위의 모듈 클래스가 딱히 하는것은 없어보이지만... 꼭 있어야 함)<br>
+  (기본적으로 프로젝트 만들때, 알아서 설정해줌)<br>
+  ('커스텀'이 가능한 정도만 알고 있자)<br>
+
+- 그 외의 모듈 등록은<br>
+  IMPLEMENT_MODULE 을 사용하여 일반 모듈을 등록<br>
+
+Build.cs<br>
 (해당 프로젝트에 사용할 모듈 이름들을 추가)<br>
 
 ```
