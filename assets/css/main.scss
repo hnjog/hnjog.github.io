@@ -5,5 +5,22 @@ search: false
 
 @charset "utf-8";
 
-@import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}"; // skin
-@import "minimal-mistakes"; // main partials
+/* 1) 폭 관련 변수 오버라이드 (임포트 이전!) */
+$max-width:        1280px;  // 전체 컨테이너 최대폭 (사이트 좌우 한계)
+$content-width:     980px;  // 본문 칼럼 폭 (글 읽는 영역)
+$right-sidebar-width: 300px; // 사이드바 쓰면 넓힐 때 (사이드바 사용 시)
+
+/* 2) 스킨 + 본체 임포트 */
+@import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}";
+@import "minimal-mistakes";
+
+/* 3) 필요시, 특정 래퍼를 조금 더 강하게 넓히기 (선택) */
+.page,
+.archive,
+.page__inner-wrap {
+  max-width: $max-width;
+}
+
+.page__content {
+  max-width: $content-width;
+}
