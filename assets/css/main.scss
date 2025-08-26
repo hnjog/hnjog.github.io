@@ -14,16 +14,6 @@ $right-sidebar-width: 300px; // 사이드바 쓰면 넓힐 때 (사이드바 사
 @import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}";
 @import "minimal-mistakes";
 
-/* 3) 필요시, 특정 래퍼를 조금 더 강하게 넓히기 (선택) */
-.page,
-.archive,
-.page__inner-wrap {
-  max-width: $max-width;
-}
-
-.page__content {
-  max-width: $content-width;
-}
 
 /* 긴 코드줄 자동 줄바꿈(가로 스크롤 없애기; 원치 않으면 주석 처리) */
 .page__content pre,
