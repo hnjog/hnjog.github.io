@@ -24,3 +24,33 @@ $right-sidebar-width: 300px; // 사이드바 쓰면 넓힐 때 (사이드바 사
 .page__content {
   max-width: $content-width;
 }
+
+/* ====== 코드/표를 컨테이너 밖으로 '풀블리드' ====== */
+/* 데스크톱 이상에서만 풀블리드 적용 (원하면 min-width 조절) */
+@media (min-width: 1024px) {
+  /* Rouge 코드블록(.highlight), 일반 pre, 표 래퍼(table-wrapper) */
+  .page__content .highlight,
+  .page__content pre,
+  .page__content .table-wrapper {
+    width: 100vw;          /* 뷰포트 가로 전체 */
+    max-width: 100vw;
+    margin-left: 50%;
+    transform: translateX(-50%); /* 가운데 정렬 + 컨테이너 탈출 */
+  }
+}
+
+/* 긴 코드줄 자동 줄바꿈(가로 스크롤 없애기; 원치 않으면 주석 처리) */
+.page__content pre,
+.page__content code {
+  white-space: pre-wrap;   /* 줄바꿈 허용 */
+  word-break: break-word;  /* 긴 토큰도 적절히 줄바꿈 */
+}
+
+/* 표는 테마가 가로 스크롤 박스로 감싸므로, 풀블리드 시 스크롤 제거 */
+.page__content .table-wrapper {
+  overflow-x: visible;
+}
+.page__content table {
+  width: 100%;
+  max-width: none;
+}
