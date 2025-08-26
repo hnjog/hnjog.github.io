@@ -6,9 +6,8 @@ search: false
 @charset "utf-8";
 
 /* 1) 폭 관련 변수 오버라이드 (임포트 이전!) */
-$max-width:        1600px;  // 전체 페이지 한계 폭
-$content-width:    1000px;  // 본문 글 영역 폭
-$right-sidebar-width: 300px; // 사이드바 쓰면 넓힐 때 (사이드바 사용 시)
+$max-width:        1400px;  // 전체 페이지 한계 폭
+$content-width:    880px;  // 본문 글 영역 폭
 
 /* 2) 스킨 + 본체 임포트 */
 @import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}";
