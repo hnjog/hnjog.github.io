@@ -265,3 +265,11 @@ bool AppBase::CreateDepthBuffer() {
     return true;
 }
 ```
+
+### 결과
+
+<img width="3833" height="2025" alt="Image" src="https://github.com/user-attachments/assets/7722fcd8-e36d-440d-b236-0c20304ac343" /><br>
+<img width="3829" height="2077" alt="Image" src="https://github.com/user-attachments/assets/eb9fb504-2a0a-4b77-b7fd-f0cfb4dfba57" /><br>
+<img width="3819" height="2077" alt="Image" src="https://github.com/user-attachments/assets/e97805d9-2452-4691-ae8f-9306ab6e17a9" /><br>
+
+Window의 크기에 따라 ViewPort가 동적으로 수정된다<br>
