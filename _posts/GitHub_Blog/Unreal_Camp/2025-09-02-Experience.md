@@ -43,7 +43,7 @@ GameMode + GameState 구성을 '비동기'로 로드/전환 하는<br>
 - 데이터만 바꿔도 빌드 없이 바꿀 수 있는 데이터 주도 방식<br>
   필요한 플러그인/Asset 만 로드하여 초기 로딩을 줄임<br>
 
-```
+```cpp
 UCLASS()
 class SAMPLES_API USampleExperienceDefinition : public UPrimaryDataAsset
 {
@@ -83,7 +83,7 @@ public:
 - '특정 모드'를 선택하는 용도로 사용<br>
   (사용자에게 '어떠어떠한 게임모드(경험)'이 있다고 알려줌)<br>
 
-```
+```cpp
 class UCommonSession_HostSessionRequest;
 
 UCLASS()
