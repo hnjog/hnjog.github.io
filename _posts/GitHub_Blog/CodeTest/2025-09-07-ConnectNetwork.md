@@ -1,7 +1,7 @@
 ---
 title: "백준 Gold 4 네트워크 연결"
-date : "2025-09-06 11:00:00 +0900"
-last_modified_at: "2025-09-06T11:00:00"
+date : "2025-09-07 11:00:00 +0900"
+last_modified_at: "2025-09-07T11:00:00"
 categories:
   - 코딩 테스트
 tags:
