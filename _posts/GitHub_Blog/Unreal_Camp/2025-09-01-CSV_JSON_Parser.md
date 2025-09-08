@@ -281,7 +281,7 @@ void ItemManager::PrintAllItems() const
 #### TMI : 혹시 ANSI로 csv-json-cpp 파싱을 했으면 그냥 이런 설정 안해도 되는거 아냐?
 
 - Json은 유니코드 데이터를 가정하기에<br>
-  ANSI로 파싱하게 되면 많이 라이브러리 들과 비호환이 발생한다<br>
+  ANSI로 파싱하게 되면 많은 라이브러리들과 비호환이 발생한다<br>
 
 - 물론 여기서는 별도의 라이브러리 대신<br>
   GPT의 파싱 코드를 사용하였지만<br>
