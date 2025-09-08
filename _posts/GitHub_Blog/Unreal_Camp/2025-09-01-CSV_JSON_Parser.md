@@ -1,7 +1,7 @@
 ---
 title: "CSV - Json Parser"
-date : "2025-09-01 15:00:00 +0900"
-last_modified_at: "2025-09-01T15:00:00"
+date : "2025-09-08 17:00:00 +0900"
+last_modified_at: "2025-09-08T17:00:00"
 categories:
   - C++
 tags:
@@ -128,14 +128,14 @@ WIDE 방식을 사용하는 것이 정석)<br>
 
 - Json<br>
 
-```
+```json
 [{"Effect":"Heal","Idx":"1","Name":"회복포션","Type":"Consume","Value":"50"},
 {"Effect":"Refrain","Idx":"2","Name":"마나포션","Type":"Consume","Value":"30"}]
 ```
 
 - C++ <br>
 
-```
+```cpp
 void DataManager::LoadItemsJson(const JsonValue& root)
 {
 	ItemDataVector.clear();
@@ -192,7 +192,7 @@ void DataManager::LoadItemsJson(const JsonValue& root)
 
 <img width="1703" height="873" alt="Image" src="https://github.com/user-attachments/assets/f40604a7-eb13-48a6-a745-225dbc56ca08" /><br>
 
-```
+```cpp
 출력 코드
 
 void ItemManager::PrintAllItems()
@@ -207,3 +207,91 @@ void ItemManager::PrintAllItems()
 	}
 }
 ```
+
+## 여담
+
+구체적으로 데이터가 깨지는 원인을 찾아보자<br>
+
+- 일단 핵심적인 요소는 크게 2개<br>
+  - C/C++의 명령줄 '/utf-8'<br>
+    : 소스 코드 파일(h,cpp)을 UTF-8로 해석,<br>
+	  또한 내부의 실행 문자셋("리터럴")을 UTF-8로 해석<br>
+	 
+  - Main의 'SetConsoleOutputCP(CP_UTF8);'<br>
+    : 콘솔의 출력하는 코드 페이지를 UTF-8로 설정<br>
+	  (콘솔이 출력할 문자열 등을 UTF-8로 해석하여 출력한다)<br>
+
+
+### 두 옵션 모두 적용하지 않은 경우
+
+[![Image](https://github.com/user-attachments/assets/fa5d182d-bbc3-43ce-a2e9-b359c86ae900)](https://github.com/user-attachments/assets/fa5d182d-bbc3-43ce-a2e9-b359c86ae900){: .image-popup}<br>
+
+- 입력한 문자열이 깨지는 모습이다<br>
+  현재 데이터 매니저 쪽에서는 json 파싱 데이터를<br>
+  utf-8 인코딩으로 받아 들이는 상황<br>
+
+- 그런데 출력하는 콘솔쪽의 코드 페이지는<br>
+  (ANSI : CP949) 이므로<br>
+  UTF-8로 인코딩한 '한글' 데이터가 깨지는 모습이다<br>
+
+### /utf-8 명령만 적용한 경우
+
+[![Image](https://github.com/user-attachments/assets/0e5ca802-e1b1-4219-b27a-b3699afee522)](https://github.com/user-attachments/assets/0e5ca802-e1b1-4219-b27a-b3699afee522){: .image-popup}<br>
+
+- 이번엔 영어와 숫자 말곤 깨져버린다!<br>
+
+- 현재 내부의 '모든 리터럴' 문자열과<br>
+  데이터 모두 UTF-8로 인코딩이 되어 있는데<br>
+  콘솔 출력은 여전히 ANSI 이기에<br>
+  죄다 깨져버리는 상황이다...<br>
+
+### SetConsoleOutputCP(CP_UTF8) 만 적용한 경우
+
+[![Image](https://github.com/user-attachments/assets/c1c06aeb-012b-4954-ad58-9a76ec285cff)](https://github.com/user-attachments/assets/c1c06aeb-012b-4954-ad58-9a76ec285cff){: .image-popup}<br>
+
+- 이번에는 입력 데이터들은 괜찮은데 다른 한글이 깨진다?!<br>
+
+- 이미 예상하였듯이<br>
+  이번에는 '리터럴' 문자열들이 문제가 된다<br>
+
+```cpp
+void ItemManager::PrintAllItems()
+{
+	for (auto& item : ItemDatas)
+	{
+		std::cout << "==========================" << '\n';
+		std::cout << "아이템 이름 : " << item.name << '\n';
+		std::cout << "아이템 효과 : " << item.effect << '\n';
+		std::cout << "아이템 수치 : " << item.value << '\n';
+		std::cout << "아이템 인덱스 : " << item.idx << '\n';
+	}
+}
+```
+
+- 해당 리터럴 문자열들은 기본적으로 ANSI로 인코딩이 되어있다<br>
+  (사실 리터럴과 콘솔 페이지의 Default가 ANSI 인코딩이다)<br>
+
+- '입력 데이터'들은 UTF-8, 그리고 콘솔의 코드 페이지도 UTF-8이라<br>
+  입력 데이터들만 괜찮은 상황이다<br>
+
+#### TMI : 혹시 ANSI로 csv-json-cpp 파싱을 했으면 그냥 이런 설정 안해도 되는거 아냐?
+
+- Json은 유니코드 데이터를 가정하기에<br>
+  ANSI로 파싱하게 되면 많이 라이브러리 들과 비호환이 발생한다<br>
+
+- 물론 여기서는 별도의 라이브러리 대신<br>
+  GPT의 파싱 코드를 사용하였지만<br>
+  ANSI로 파싱하려면 추가적인 별도 구현이 필요<br>
+
+- 또한 Git 등의 버전 관리 툴 등도 유니코드가 전제되기에<br>
+  이러면 데이터들이 Git에서 볼때 깨진다...<br>
+
+### 최종본(Final)
+[![Image](https://github.com/user-attachments/assets/a9efc8a0-d66f-4b73-b9f2-37b973304fc1)](https://github.com/user-attachments/assets/a9efc8a0-d66f-4b73-b9f2-37b973304fc1){: .image-popup}<br>
+
+- 결국 '데이터'의 인코딩과<br>
+  '리터럴', 그리고 '콘솔'의 코드 페이지 까지<br>
+  전부 UTF-8로 통일하고서야 정상적으로 출력이 되는 모습이다<br>
+
+- 인코딩 문제는 게임을 구현할때는 고려하기 힘든 사안이지만<br>
+  더 편리한 데이터 관리를 위해서는 한번쯤 고려해야하는 문제가 아닐까 싶기도 하다<br>
