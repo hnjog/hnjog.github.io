@@ -1,7 +1,7 @@
 ---
 title: "Unreal TIL (0915)"
-date : "2025-09-15 19:30:00 +0900"
-last_modified_at: "2025-09-15T19:30:00"
+date : "2025-09-15 20:00:00 +0900"
+last_modified_at: "2025-09-15T20:00:00"
 categories:
   - Unreal
   - C++
@@ -66,6 +66,8 @@ static ConstructorHelpers::FObjectFinder<UMaterial> MaterialAsset(TEXT("/Game/Re
   패키지 이름 : `/Game/Resources/Props/SM_Chair` <br>
   오브젝트 이름 : `.SM_Chair` (일반적으론 파일명과 동일함)<br>
 
+- 기본적으로 에셋의 '우클릭 - Copy Reference'에서<br>
+  '/Game/...' 부분부터 활용이 가능<br>
 
 이렇게 잘 '지정' 해주니 실패 로그는 사라졌으나<br>
 여전히 에디터에서 바뀌지 않는다...?<br>
@@ -85,6 +87,29 @@ static ConstructorHelpers::FObjectFinder<UMaterial> MaterialAsset(TEXT("/Game/Re
   해당 정적 지역 변수는 프로세스에서 한번만 호출되기에<br>
   에디터를 다시 껐다 켜야 정상 작동함<br>
   (아니면 그냥 static을 지우는 방식도 존재함)<br>
+
+### AssetManager와 ConstructorHelpers
+
+- 작은 프로토타입이라면 ConstructorHelpers 사용이 간단<br>
+
+- 중대형 프로젝트로 갈 수록 UAssetManager 고려<br>
+  (+ Soft Refs/Streamablemanager)<br>
+
+#### 비교 표
+
+| ✨ **항목**           | 🎨 **`ConstructorHelpers`**<br>(FObjectFinder / FClassFinder) | 🚀 **UAssetManager**<br>(+ `TSoftObjectPtr`, `StreamableManager`) |
+| ------------------ | ------------------------------------------------------------- | ----------------------------------------------------------------- |
+| 🧭 **철학**          | “생성자에서 **즉시·동기 로드** 필요 → 경로로 바로 찾기”                           | “참조만 들고 있다가 **필요 시 비동기/선행 로드 + 자산군 관리**”                          |
+| 📍 **사용 위치**       | **생성자 한정** (Actor/Component 내부)                               | 어디서든 가능 (게임 전 구간), 주로 **PrimaryAsset(데이터에셋)** 중심                  |
+| ⚡ **로드 방식**        | 항상 **동기 로드** → 시작 시 hitch 발생 가능                               | **비동기/우선순위/프리패치/캐시/취소** 등 유연한 처리                                  |
+| 📦 **의존성·묶음**      | 개별 경로 **하드코딩**, 묶음/번들 개념 없음                                   | **PrimaryAssetType/Bundle**로 논리적 그룹 관리 (`Gameplay`, `Cosmetic` 등) |
+| 📈 **확장성(규모)**     | 소규모 프로젝트·툴·샘플에 적합                                             | **중·대규모 제작 표준** → 수백\~수천 리소스에도 안정적                                |
+| 🔗 **경로 변경 내성**    | 하드 경로 변경에 취약 → 리다이렉터 실패 시 크래시 위험                              | **Soft Reference** 기반 → 리팩터/리타겟 친화적                               |
+| 💾 **메모리·스타트업**    | 시작 시 메모리 사용량 증가, 맵/PIE 부팅 지연 가능                               | **필요 시점 로드**로 메모리 최적화, 맵 전환/로딩 화면 연계 용이                           |
+| 🔧 **요구 설정·초기 투자** | 거의 없음 (바로 사용 가능)                                              | **AssetManager 설정**(INI 규칙, PrimaryAsset 등록) 및 데이터자산 설계 필요        |
+| 🎨 **디자이너 워크플로**   | 코드에 경로 고정 → 디자이너 자유도 낮음                                       | **DataAsset/SoftRef** 노출 → **BP/데이터 주도** 제작 용이                    |
+| 📦 **DLC·패치·쿡 규칙** | 세밀 제어 어려움                                                     | **PrimaryAssetLabel/쿡 규칙**으로 빌드 크기·의존성·품질 제어                      |
+| 🏆 **대표 쓰임새**      | 한두 개 **절대 필요한** 기본 메쉬/머티리얼/위젯                                 | 맵/무기/적/스킨/사운드팩 등 **게임 콘텐츠 전반**                                    |
 
 
 ## Actor Life Cycle 함수들
