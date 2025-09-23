@@ -34,7 +34,7 @@ tags:
 ## 구현 기능
 
 <iframe width="560" height="315"
-    src="https://youtu.be/embeded/B-StxcaJRkA"
+    src="https://www.youtube.com/embed/B-StxcaJRkA"
     frameborder="0"
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
     allowfullscreen>
