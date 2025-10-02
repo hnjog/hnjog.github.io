@@ -172,7 +172,7 @@ InitGame에서<br>
   별도로 로딩 시스템을 만드는 이유?<br>
   - 엔진 업데이트를 통한 내부 수정에 영향을 받지 않기 위함<br>
 
-```Cpp
+```cpp
 void ASampleGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
