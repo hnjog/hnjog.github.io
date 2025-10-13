@@ -1,7 +1,7 @@
 ---
 title: "김하연 튜터님 강의 - '악취가 나는 그 코드'"
 date : "2025-10-13 14:00:00 +0900"
-last_modified_at: "2025-10-14:00:00"
+last_modified_at: "2025-10-13T14:00:00"
 categories:
   - Unreal
   - C++
