@@ -1,5 +1,5 @@
 ---
-title: "백준 Gold 5 소셜 귀찮은 해강이"
+title: "백준 Gold 5 귀찮은 해강이"
 date : "2025-11-07 10:30:00 +0900"
 last_modified_at: "2025-11-07T10:30:00"
 categories:
