@@ -17,9 +17,9 @@ minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt"
 # Site Settings
 locale                   : "ko-KR"
 future                   : true
-title                    : "싱글벙글 개발자 Blog"
+title                    : "현재훈 - 개인 공부용 Blog"
 title_separator          : "-"
-subtitle                 : "/훌쩍훌쩍" # site tagline that appears below site title in masthead
+subtitle                 : "/하지만 귀찮다!" # site tagline that appears below site title in masthead
 name                     : "현 재훈(Hyun JaeHoon)"
 description              : "TIL OR WIL"
 url                      : "https://hnjog.github.io" # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
@@ -27,7 +27,7 @@ baseurl                  : # the subpath of your site, e.g. "/blog"
 repository               : "hnjog/hnjog.github.io" # GitHub username/repo-name e.g. "mmistakes/minimal-mistakes"
 teaser                   : # path of fallback teaser image, e.g. "/assets/images/500x300.png"
 logo                     : # path of logo image to display in the masthead, e.g. "/assets/images/88x88.png"
-masthead_title           : "귀찮귀찮 개발자" # overrides the website title displayed in the masthead, use " " for no title
+masthead_title           : "귀찮음이 효율을 낳는다" # overrides the website title displayed in the masthead, use " " for no title
 # breadcrumbs            : false # true, false (default)
 words_per_minute         : 200
 comments:
