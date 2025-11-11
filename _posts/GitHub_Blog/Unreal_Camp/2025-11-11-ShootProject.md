@@ -69,9 +69,9 @@ tags:
   - 개인적으로는 Local Branch로 사용하고, Rebase를 사용해<br>
     커밋을 깔끔히 남기는 것을 선호한다<br>
 
-### 개인 작업
+## 개인 작업
 
-#### 코드 부문<br>
+### 코드 부문<br>
 - 무기 전반 (근거리,총기,수류탄 등)<br>
 
 - 장착 컴포넌트 (무기 장착)<br>
@@ -82,7 +82,7 @@ tags:
 
 - 상점 매니저<br>
 
-#### 프로젝트 관련<br>
+### 프로젝트 관련<br>
 - 게임 구조 제작(UML)<br>
 - 개발 일정 조율<br>
 - 분업과 협업 사항 결정<br>
@@ -140,16 +140,6 @@ tags:
 
 - 이제와서 생각하는 거지만 GAS에 도전했어야 했나 생각이 들기도..<br>
   - 다만, 그 경우 최소 4명 이상이 GAS에 대하여 공부하는 시간이 필요했을 거라 생각한다<br>
-
-### 총 발표 영상
-
-<iframe width="560" height="315"
-    src="https://www.youtube.com/embed/JT-sTjOJUHA?start=2"
-    frameborder="0"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowfullscreen>
-</iframe><br>
-
 
 ## KPT(Keep, Problem , Try) 회고
 
