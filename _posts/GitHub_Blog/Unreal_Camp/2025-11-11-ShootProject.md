@@ -141,6 +141,25 @@ tags:
 - 이제와서 생각하는 거지만 GAS에 도전했어야 했나 생각이 들기도..<br>
   - 다만, 그 경우 최소 4명 이상이 GAS에 대하여 공부하는 시간이 필요했을 거라 생각한다<br>
 
+## 발표 영상
+
+<iframe width="560" height="315" 
+  src="https://www.youtube.com/embed/4e0ScQV-lmk" 
+  title="YouTube video player" frameborder="0" 
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+  allowfullscreen>
+</iframe><br>
+
+- 정말 아쉽게도 시연 영상의 Sound가 재생되지 않았다<br>
+- 분명 Zoom의 Sound 관련 공유 옵션을 체크했는데 왜그런지 모르겠다<br>
+  (이전에 Zoom에 연결까지 하며 테스트를 했는데도 막상 실전에서 이러니...)<br>
+
+### Team Notion
+
+[7조의 Team Notion](https://www.notion.so/teamsparta/777-JackPot-26c2dc3ef51480d18188ef2b22897dcd){:target="_blank"}<br>
+
+- Team Notion 역시 이전보다 적극적으로 임해주어 무척 좋은 프로젝트였다 느꼈다<br>
+
 ## KPT(Keep, Problem , Try) 회고
 
 Keep : 잘하고 있는 점, 계속 했으면 좋겠다 싶음 점<br>
