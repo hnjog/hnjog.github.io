@@ -1,7 +1,7 @@
 ---
 title: "김하연 튜터님 강의 - 'Lyra의 데이터 기반 설계'"
-date : "2025-11-03 12:00:00 +0900"
-last_modified_at: "2025-11-03T12:00:00"
+date : "2025-11-17 12:00:00 +0900"
+last_modified_at: "2025-11-17T12:00:00"
 categories:
   - Unreal
   - C++
