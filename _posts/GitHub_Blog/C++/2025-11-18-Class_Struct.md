@@ -1,7 +1,7 @@
 ---
 title: "Class vs Struct"
-date : "2025-11-18 13:00:00 +0900"
-last_modified_at: "2025-11-18T13:00:00"
+date : "2025-11-18 14:00:00 +0900"
+last_modified_at: "2025-11-18T14:00:00"
 categories:
   - C++
 tags:
