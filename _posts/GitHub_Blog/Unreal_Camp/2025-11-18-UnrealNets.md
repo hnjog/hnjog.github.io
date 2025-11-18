@@ -192,7 +192,14 @@ UWorld
 - RemoteRole<br>
   : 현재 반대편의 네트워크 구조에서의 Actor의 권한<br>
     (클라 -> 서버 / 서버 -> 클라)<br>
-   
+  
+- RemoteRole이 필요한 이유??<br>
+  : LocalRole만 존재하였다면 '분간'하기 어려운 케이스를 고려한 것<br>
+  - 예를 들자면, '서버'에서 Spawn한 NPC 캐릭터와 접속한 플레이어의 LocalRole은 모두 Authority임<br>
+    '구분'하기 힘든 상태<br>
+  - 그러나 RemoteRole을 통하여 '`ROLE_AutonomousProxy`'인 캐릭터를 찾는다면<br>
+    플레이어 캐릭터를 구분할 수 있음<br>
+
 ### NetRole의 종류
 
 | Role                     | 의미                        | 사용처                      |
@@ -200,7 +207,7 @@ UWorld
 | **ROLE_Authority**       | 서버에서만 가지는 절대 권한           | 게임의 실제 상태 변경             |
 | **ROLE_AutonomousProxy** | 클라이언트가 주도적으로 조작하는 Actor   | PlayerController, 본인 캐릭터 |
 | **ROLE_SimulatedProxy**  | 서버의 복제를 “수동으로 따라가는” Actor | 다른 플레이어의 캐릭터             |
-
+| **ROLE_None**       | 레플리케이션 되지 않는 Actor             | 다른 네트워크에서 안보이는 용도(드문 편)   |
 
 ex)<br>
 서버에 A,B,C가 존재할때의 NetRole 예시<br>
@@ -220,6 +227,25 @@ ex)<br>
 - AutonomousProxy는 '입력'으로 조종되는 단 하나의 Pawn 정도에만 쓰임<br>
   - 플레이어가 대규모 RTS 등을 통해 유닛을 대량으로 조정하는 경우도<br>
     '그 입력'을 받아 서버에서 처리 후, 클라에 동기화 하는 것임<br>
+
+- ROLE_None 같은 경우는 사용처가 꽤 드문 편<br>
+  간혹 '서버'에서만 사용하는 Actor에서 고려할 수 있음<br>
+
+### 사용 방식
+
+```cpp
+FORCEINLINE_DEBUGGABLE bool AActor::HasAuthority() const
+{
+	return (GetLocalRole() == ROLE_Authority);
+}
+```
+
+- 게임에 중대한 영향을 끼치는 Damage/Spawn 같은 기능이라면<br>
+  서버에서만 처리되도록 해당 함수를 통해 '서버' 확인<br>
+
+- 입력/UI 로직의 경우는 `ROLE_AutonomousProxy`에서만 실행되어야 하니<br>
+  `AController::IsLocalController()` 나 `APawn::IsLocallyControlled()`를 이용<br>
+
 
 ## OwnerShip
 
