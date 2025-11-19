@@ -1,0 +1,1295 @@
+---
+title: "김하연 튜터님 강의 - 'Tick, Event, Async - 성능 최적화 3단 콤보'"
+date : "2025-11-19 12:00:00 +0900"
+last_modified_at: "2025-11-19T12:00:00"
+categories:
+  - Unreal
+  - C++
+tags:
+  - Unreal
+  - C++
+  - Tick
+  - Event
+  - Async
+  - Unreal 성능 최적화
+---
+
+# 불필요한 프레임을 피하는 최적화 방식에 대하여 알아보자
+
+김하연 튜터님의 Notion 자료를 바탕으로 강의를 들으며<br>
+수정 및 재작성한 블로깅용 글<br>
+
+# 1단계. Tick의 숨겨진 비용 🥴
+
+## **1-1. Tick이 무엇이었는지 다시 생각해보기**
+
+### **Tick = 게임의 심장박동**
+
+- 매 프레임마다 실행되는 함수<br>
+- 60FPS = 초당 60번 실행<br>
+- 30FPS = 초당 30번 실행<br>
+
+### **기본 Tick 구조**
+
+```cpp
+void AMyActor::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);  // 부모 Tick 먼저 호출
+
+    // DeltaTime = 이전-현재 프레임 시간차
+    // 60FPS → 0.016초, 30FPS → 0.033초
+
+    UE_LOG(LogTemp, Warning, TEXT("Tick 실행! DeltaTime: %f"), DeltaTime);
+}
+```
+
+### **DeltaTime 활용 - 프레임 독립적 이동**
+
+```cpp
+void AMyActor::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    // 나쁜 예: 프레임 의존
+    SetActorLocation(GetActorLocation() + FVector(5, 0, 0));
+    // 60FPS: 초당 300 이동, 30FPS: 초당 150 이동
+
+    // 좋은 예: DeltaTime 사용
+    float Speed = 100.0f;  // 초당 100 유닛
+    FVector Movement = FVector(Speed * DeltaTime, 0, 0);
+    SetActorLocation(GetActorLocation() + Movement);
+    // 프레임과 무관하게 초당 100 이동
+}
+```
+
+## **1-2. Tick의 진짜 문제 - "쌓이면 무겁다"**
+
+### **Tick 비용 계산**
+
+```
+액터 1개      = 0.05ms
+액터 100개    = 5ms 
+액터 1000개   = 50ms
+액터 10000개  = 500ms 
+```
+
+- 실제 비용은 로직에 따라 달라지긴 함<br>
+- 많이 사용하는 Actor 일수록 Tick 호출이 점점 늘어난다...<br>
+
+### **프레임 예산 (60FPS = 16.67ms)**
+
+```
+입력 처리       : 1ms
+게임 로직(Tick) : 10ms ← 문제!
+물리            : 3ms
+AI              : 2ms
+애니메이션      : 2ms
+렌더링          : 5ms
+-------------------
+합계: 23ms → 16.67ms 초과! → FPS 하락
+```
+
+### **실제 사례 - AAA 프로젝트의 문제 코드**
+
+```cpp
+// 각 몬스터의 Tick
+void AMonster::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    // 🔴 문제 1: 매 프레임 플레이어 검색
+    ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+    // 200마리 × 60FPS = 초당 12,000번!
+
+    if (Player)
+    {
+        // 🔴 문제 2: 매 프레임 거리 계산 (sqrt 포함)
+        float Distance = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
+        // 200마리 × 60FPS = 초당 12,000번 sqrt!
+
+        // 🔴 문제 3: 매 프레임 경로 탐색
+        if (Distance > AttackRange)
+        {
+            TArray<FVector> Path = FindPathToPlayer();  // A* 알고리즘
+            MoveAlongPath(Path);
+        }
+        else
+        {
+            Attack(Player);
+        }
+    }
+}
+```
+
+- 거리 계산은 생각보다 '비싼' 계산임<br>
+  - sqrt, 벡터 연산<br>
+
+**결과: 몬스터 200마리 → 60FPS에서 25FPS로 폭락**
+
+## **1-3. Tick 오버헤드 확인 방법**
+
+### **방법 1: stat game**
+
+```
+` 키 → stat game 입력
+
+Frame: 16.67ms (전체)
+├─ Game: 8.5ms (Tick 포함!) ← 10ms 넘으면 문제
+├─ Draw: 5.2ms
+└─ GPU: 7.8ms
+```
+
+- `를 통해 명령어를 확인할 수 있음<br>
+- 기본적으로 이걸 시도해본 후, 다른 방식을 체크해도 좋음<br>
+
+### **방법 2: 직접 측정**
+
+```cpp
+void AMyActor::Tick(float DeltaTime)
+{
+    double StartTime = FPlatformTime::Seconds();
+
+    // Tick 로직
+    DoHeavyWork();
+
+    double ElapsedTime = FPlatformTime::Seconds() - StartTime;
+    if (ElapsedTime > 0.001)  // 1ms 이상
+    {
+        UE_LOG(LogTemp, Warning, TEXT("무거운 Tick: %.3f ms"),
+               ElapsedTime * 1000);
+    }
+}
+```
+
+- 로그 출력 자체도 약간 성능을 떨어트리는 편<br>
+- 1차원 적인 성능 측정 용도<br>
+- 의심되는 위치의 프로파일링 용도<br>
+
+## **1-4. Tick 최적화 해결책**
+
+### **해결책 1: 실행 간격 조절**
+
+```cpp
+// ❌ Before: 매 프레임 실행
+void AEnemy::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    CheckPlayerDistance();  // 초당 60번!
+    UpdateAIState();
+}
+```
+
+- 매 프레임마다 실행하는 것은 1초에 60번 호출됨<br>
+
+```cpp
+// ✅ After: 0.1초마다만 실행
+void AEnemy::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    TimeSinceLastUpdate += DeltaTime;
+
+    if (TimeSinceLastUpdate >= 0.1f)  // 0.1초마다
+    {
+        TimeSinceLastUpdate = 0.0f;
+        CheckPlayerDistance();  // 초당 10번
+        UpdateAIState();
+    }
+
+    UpdateAnimation();  // 애니메이션은 매 프레임
+}
+```
+
+- 과하게 체크하지 말고 권장 주기에 맞춰보자<br>
+
+**권장 주기**
+
+- 매 프레임: 입력, 카메라, 애니메이션<br>
+- 0.05초: 근접 전투<br>
+- 0.1초: AI, 거리 체크<br>
+- 0.2~0.5초: 미니맵, 원거리 적<br>
+
+공통 헤더 파일등에 Define 같은 걸로 선언해두기<br>
+(매직 넘버보단 좋을지도?)<br>
+
+일부 요소들은 매 프레임 돌려도 '인식'하지 못할 수 있음<br>
+
+- 세부 최적화 방식 중 하나이긴 함<br>
+
+### **해결책 2: 중복 계산 제거**
+
+```cpp
+// ❌ Before: 각자 계산 (200번)
+void AEnemy::Tick(float DeltaTime)
+{
+    ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+    FVector PlayerLoc = Player->GetActorLocation();
+    float Distance = FVector::Dist(GetActorLocation(), PlayerLoc);
+}
+```
+
+- 매번 Player를 Tick에서 얻어온다...?<br>
+
+```cpp
+// ✅ After: 매니저가 1번 계산 → 공유
+void AEnemyManager::Tick(float DeltaTime)
+{
+    if (!CachedPlayer)
+        CachedPlayer = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+
+    FVector PlayerLocation = CachedPlayer->GetActorLocation();  // 1번만
+
+    for (AEnemy* Enemy : AllEnemies)
+    {
+        float Distance = FVector::Dist(Enemy->GetActorLocation(), PlayerLocation);
+        Enemy->SetPlayerInfo(PlayerLocation, Distance);
+    }
+}
+```
+
+- Manager에서 Enemy의 데이터를 세팅해주기<br>
+
+- 캐싱이 가능한 방식<br>
+  - 플레이어 위치를 한번만 사용할 수 있으므로<br>
+    (실제로 시간 지역성의 방식에 적합)<br>
+
+### **해결책 3: 거리별 차등 업데이트**
+
+```cpp
+void AEnemyManager::UpdateEnemies()
+{
+    for (AEnemy* Enemy : AllEnemies)
+    {
+        float Distance = FVector::Dist(Enemy->GetActorLocation(), PlayerLocation);
+
+        if (Distance < 500.0f)       // 근거리
+            Enemy->SetUpdateRate(0.033f);  // 30FPS
+        else if (Distance < 1500.0f) // 중거리
+            Enemy->SetUpdateRate(0.1f);    // 10FPS
+        else if (Distance < 3000.0f) // 원거리
+            Enemy->SetUpdateRate(0.5f);    // 2FPS
+        else                          // 초원거리
+            Enemy->SetUpdateRate(1.0f);    // 1FPS
+    }
+}
+```
+
+- 플레이어와의 거리에 따라 업데이트 주기를 변경하는 방식<br>
+  - 나름의 LOD 처리 방식<br>
+
+### **해결책 4: 매니저 패턴**
+
+```cpp
+// EnemyManager.h
+class AEnemyManager : public AActor
+{
+private:
+    float FastUpdateTimer = 0.0f;    // 0.05초 주기
+    float NormalUpdateTimer = 0.0f;  // 0.1초 주기
+    float SlowUpdateTimer = 0.0f;    // 0.5초 주기
+
+    TArray<AEnemy*> CloseEnemies;    // 500m 이내
+    TArray<AEnemy*> MediumEnemies;   // 500-1500m
+    TArray<AEnemy*> FarEnemies;      // 1500m+
+};
+```
+
+```cpp
+// EnemyManager.cpp
+void AEnemyManager::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    FastUpdateTimer += DeltaTime;
+    NormalUpdateTimer += DeltaTime;
+    SlowUpdateTimer += DeltaTime;
+
+    if (FastUpdateTimer >= 0.05f)  // 근거리
+    {
+        FastUpdateTimer = 0.0f;
+        UpdateCloseEnemies();
+    }
+
+    if (NormalUpdateTimer >= 0.1f)  // 중거리
+    {
+        NormalUpdateTimer = 0.0f;
+        UpdateMediumEnemies();
+    }
+
+    if (SlowUpdateTimer >= 0.5f)  // 원거리
+    {
+        SlowUpdateTimer = 0.0f;
+        UpdateFarEnemies();
+        ReclassifyEnemies();  // 거리별 재분류
+    }
+}
+
+void AEnemyManager::ReclassifyEnemies()
+{
+    FVector PlayerLoc = CachedPlayer->GetActorLocation();
+
+    CloseEnemies.Empty();
+    MediumEnemies.Empty();
+    FarEnemies.Empty();
+
+    for (AEnemy* Enemy : AllEnemies)
+    {
+        float DistSqr = FVector::DistSquared(Enemy->GetActorLocation(), PlayerLoc);
+
+        if (DistSqr < 250000.0f)  // 500^2
+            CloseEnemies.Add(Enemy);
+        else if (DistSqr < 2250000.0f)  // 1500^2
+            MediumEnemies.Add(Enemy);
+        else
+            FarEnemies.Add(Enemy);
+    }
+}
+```
+
+- Enemt가 개별 Tick을 돌리지 않게 하며<br>
+  Manager가 'Update' 를 호출하는 방식<br>
+
+- 멀리 떨어진 적은 Update 주기가 좀 낮더라도 괜찮음<br>
+
+- 일정 주기마다 플레이어와의 거리를 통해<br>
+  업데이트를 해줌<br>
+
+**성능 개선 결과**
+
+| 최적화 방법 | 개선율 |
+| --- | --- |
+| 실행 간격 조절 | **6배** |
+| 중복 계산 제거 | **200배** |
+| 연산 최적화 | **30%** |
+| 거리별 차등 | **3배** |
+| 매니저 패턴 | **10배** |
+
+- 사소해보일 수 있지만<br>
+  이런 최적화가 쌓여 훌륭한 성능을 만든다<br>
+
+## **1-5. Tick Group으로 실행 순서 최적화**
+
+### **Tick 실행 순서**
+
+```
+[프레임 시작]
+   ↓
+TG_PrePhysics (물리 전) - 입력, 이동 명령
+   ↓
+물리 엔진 계산
+   ↓
+TG_PostPhysics (물리 후) - AI, 충돌 처리 [기본값]
+   ↓
+TG_PostUpdateWork (마지막) - UI, 카메라
+   ↓
+[프레임 끝]
+```
+
+- Tick Group을 이용하여 현재 Actor의 Tick의 순서를 정하는 방식<br>
+
+### **설정 방법**
+
+```cpp
+// 플레이어 입력 - 물리 전
+AMyPlayerController::AMyPlayerController()
+{
+    PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.TickGroup = TG_PrePhysics;
+}
+
+// 적 AI - 물리 후 (기본값)
+AEnemy::AEnemy()
+{
+    PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.TickGroup = TG_PostPhysics;
+}
+
+// 카메라 - 마지막
+AFollowCamera::AFollowCamera()
+{
+    PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.TickGroup = TG_PostUpdateWork;
+}
+```
+
+- '실행 순서'를 최적화 하여<br>
+  구조적인 개선을 하기 위한 방식임<br>
+
+- 불필요한 계산 상황(ex: 재계산)을 예방하는 것이 큰 목적<br>
+  - 그 외에 싱크, 이전 단계의 상황 추적 같은 버그 상황을 예방<br>
+
+- 실제 성능 상의 개선은 거의 없는 편<br>
+
+## **1-6. Tick 최적화 체크리스트**
+
+### ✅ **진단**
+
+- stat game으로 Game 시간 확인 (10ms 이상 주의)<br>
+- stat unit으로 자세한 분석<br>
+- 특정 액터 Tick 시간 측정<br>
+
+### ✅ **최적화**
+
+- 실행 간격 조절 (0.1초면 충분?)<br>
+- 중복 계산 제거 (캐싱)<br>
+- 매니저 패턴 적용<br>
+- 거리별 차등 업데이트 - (LOD)<br>
+- Tick Group 설정<br>
+
+### 🤨 핵심정리
+
+1. **Tick은 매 프레임** → 쌓이면 무겁다<br>
+2. **stat game으로 진단** → Game 10ms 이상 주의<br>
+3. **0.1초 간격으로도 충분** → 매 프레임 필요한지 확인<br>
+4. **매니저 패턴** → 200개 Tick을 1개로<br>
+
+# 2단계. Timer Manager 마스터하기 ⏰
+
+## 2-1. Timer 사용법
+
+- **Tick** = 심장박동 (쉬지 않고 계속)<br>
+- **Timer** = 알람시계 (필요할 때만)<br>
+
+| 특징 | Tick | Timer |
+| --- | --- | --- |
+| 실행 빈도 | 매 프레임 | 지정한 주기 |
+| CPU 부담 | 높음 | 낮음 |
+| 용도 | 실시간 반응 | 주기적 체크 |
+| 관리 난이도 | 혼란 | Handle로 제어 |
+
+- 필요할 때만 호출하는 예약 기능<br>
+
+```cpp
+// Enemy.h
+UCLASS()
+class AEnemy : public ACharacter
+{
+    GENERATED_BODY()
+    
+private:
+    FTimerHandle DistanceCheckTimer; // 거리 체크 타이머 핸들
+    void CheckDistanceToPlayer();    // 타이머가 실행할 함수
+};
+
+// Enemy.cpp
+void AEnemy::BeginPlay()
+{
+    Super::BeginPlay();
+    
+    // 2초 후에 CheckDistanceToPlayer 한 번 실행
+    GetWorld()->GetTimerManager().SetTimer(
+        DistanceCheckTimer,              // 타이머 핸들
+        this,                            // 함수를 실행할 객체
+        &AEnemy::CheckDistanceToPlayer,  // 실행할 함수
+        2.0f,                            // 대기 시간(초)
+        false                            // 반복 여부 (false = 한 번만)
+    );
+}
+
+void AEnemy::CheckDistanceToPlayer()
+{
+    UE_LOG(LogTemp, Warning, TEXT("적이 플레이어와의 거리를 체크합니다!"));
+}
+```
+
+| 주기(초) | 초당 호출 횟수 (1/주기) | 초당 총 비용 (N×비용×호출수) | 프레임당 평균 비용(60FPS 기준) | 소감 |
+| --- | --- | --- | --- | --- |
+| **0.016** (매 프레임) | ~62.5 | 200 × 0.01ms × 62.5 = **125ms/s** | **~2.08ms/프레임** | 프레임 예산의 12.5% 소모 |
+| **0.050** | 20 | 200 × 0.01 × 20 = **40ms/s** | **~0.67ms/프레임** | 여유 생김 |
+| **0.100** | 10 | 200 × 0.01 × 10 = **20ms/s** | **~0.33ms/프레임** | 대부분 상황에 충분 |
+| **0.250** | 4 | 200 × 0.01 × 4 = **8ms/s** | **~0.13ms/프레임** | 아주 가벼움 |
+| **1.000** | 1 | 200 × 0.01 × 1 = **2ms/s** | **~0.03ms/프레임** | 거의 공짜 |
+
+- 특정 로직을 사용할 때<br>
+  '타이머'를 얼마나 자주 호출할지에 대한 간략한 표<br>
+
+### 스파이크 방지
+
+```cpp
+void AEnemy::BeginPlay()
+{
+    Super::BeginPlay();
+
+    const float Period = 0.1f;
+    const float Jitter = FMath::FRandRange(0.f, Period);
+
+    GetWorld()->GetTimerManager().SetTimer(
+        DistanceCheckTimer,
+        this,
+        &AEnemy::CheckDistanceToPlayer,
+        Period,
+        true,
+        Jitter  // 랜덤 초기 지연
+    );
+}
+```
+
+- 특정 시점에 '모두' 타이머를 쓴다면<br>
+  1프레임에 강한 부하가 걸리게 됨<br>
+
+- 그렇기에 랜덤으로 맞추어<br>
+  성능 스파이크를 방지<br>
+
+## 2-2. Timer Handle 안전하게 관리하기
+
+### 잘못된 예시 ❌
+
+```cpp
+oid AEnemy::StopDistanceCheck()
+{
+    GetWorld()->GetTimerManager().ClearTimer(DistanceCheckTimer);
+    // 여기서 핸들을 초기화하지 않으면, 유효하지 않은 핸들이 남을 수 있음
+}
+```
+
+### 올바른 예시 ✅
+
+```cpp
+void AEnemy::StopDistanceCheck()
+{
+    if (DistanceCheckTimer.IsValid()) // 먼저 유효성 체크
+    {
+        GetWorld()->GetTimerManager().ClearTimer(DistanceCheckTimer);
+        DistanceCheckTimer.Invalidate(); // 핸들 초기화
+    }
+}
+```
+
+- 적절한 타이머인지를 확인 후,<br>
+  타이머용 초기화 코드를 호출할 것!<br>
+
+### 더 안전한 패턴
+
+```cpp
+void AEnemy::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+    Super::EndPlay(EndPlayReason);
+}
+```
+
+- EndPlay 시점에서<br>
+  타이머를 제거하여 타이머 관련한 이슈를 미리 예방하기<br>
+
+## 2-3. SetTimer vs SetTimerForNextTick
+
+```cpp
+// SetTimer: 지정 시간 후 실행
+GetWorld()->GetTimerManager().SetTimer(
+    AttackDelayTimer, this, &AEnemy::PerformAttack, 0.5f, false
+);
+
+// SetTimerForNextTick: 다음 프레임에서 실행
+GetWorld()->GetTimerManager().SetTimerForNextTick(
+    this, &AEnemy::UpdateEnemyUI
+);
+```
+
+- 다음 프레임에 1번만 호출되게 하고 싶을 때 사용하는 함수<br>
+  (BeginPlay 바로 다음 Frame에 호출한다던가)<br>
+  - 한 프레임 뒤에 미룬 후, 전부 Init 된 후 로직 실행 등<br>
+  - 보통 '특정 상황' 이후에 바로 호출하기 위한 로직으로 사용<br>
+
+## 2-4. Lambda vs. Delegate
+
+### Lambda 방식 - 짧고 간단한 작업에 적합
+
+```cpp
+void AEnemy::StartAttackSequence()
+{
+    GetWorld()->GetTimerManager().SetTimer(
+        AttackTimer,
+        [this]() // 람다 캡처
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Enemy 공격!"));
+            if (ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
+            {
+                // Player에게 데미지
+                Player->TakeDamage(AttackDamage);
+            }
+        },
+        1.0f,
+        false
+    );
+}
+```
+
+- 람다 방식은 깔끔하고 편리<br>
+  불필요한 함수를 안 만들어도 됨<br>
+
+- 다만 포인터 캡쳐 시,<br>
+  nullptr 접근 등의 이슈 존재 가능함<br>
+
+- 정말 '간단'한 작업이라면 생산성이 높은 방식<br>
+
+### Lambda 방식 안전하게 쓰려면…?
+
+### 객체 파괴될 때 모든 타이머 정리
+
+```cpp
+void AEnemy::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+    Super::EndPlay(EndPlayReason);
+}
+```
+
+- 현재 객체에 대한 이슈 예방하기<br>
+
+### TWeakObjectPtr 쓰기
+
+```cpp
+TWeakObjectPtr<AEnemy> WeakThis = this;
+GetWorld()->GetTimerManager().SetTimer(
+    AttackTimer,
+    [WeakThis]()
+    {
+        if (WeakThis.IsValid())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("안전하게 공격!"));
+            WeakThis->PerformAttack();
+        }
+    },
+    2.0f,
+    false
+);
+```
+
+- nullptr 접근 이슈 예방하기<br>
+  - 람다와 캡쳐 기능을 모두 사용한다면 염두에 둘 것<br>
+
+### Delegate 방식 - 명확하고 유지보수에 유리
+
+```cpp
+// Enemy.cpp
+void AEnemy::BeginPlay()
+{
+    GetWorld()->GetTimerManager().SetTimer(
+        DistanceCheckTimer,
+        this,
+        &AEnemy::OnDistanceCheckTimer,
+        0.1f,
+        true
+    );
+}
+
+void AEnemy::OnDistanceCheckTimer()
+{
+    // 복잡한 로직
+    CheckDistanceToPlayer();
+    UpdateAIState();
+    UE_LOG(LogTemp, Warning, TEXT("Enemy AI 업데이트!"));
+}
+```
+
+- 함수 만드는 것이 귀찮을 수 있지만<br>
+  기능이 커질 경우 등에 대해서는 확장성에 유리함<br>
+
+## 2-5. Tick → Timer로 변경
+
+### Before (Tick 방식) ❌
+
+```cpp
+void AEnemy::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+    
+    // 매 프레임마다 Player 찾기
+    ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+    if (!Player) return;
+    
+    // 매 프레임마다 거리 계산
+    float Distance = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
+    if (Distance < AttackRange)
+    {
+        Attack();
+    }
+}
+```
+
+### After (Timer 방식) ✅
+
+```cpp
+void AEnemy::BeginPlay()
+{
+    Super::BeginPlay();
+    
+    PrimaryActorTick.bCanEverTick = false; // Tick 비활성화
+    
+    // 0.1초마다만 거리 체크 (초당 10번)
+    GetWorld()->GetTimerManager().SetTimer(
+        DistanceCheckTimer,
+        this,
+        &AEnemy::CheckDistanceToPlayer,
+        0.1f,
+        true
+    );
+}
+
+void AEnemy::CheckDistanceToPlayer()
+{
+    ACharacter* Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+    if (!Player) return;
+    
+    float Distance = FVector::Dist(GetActorLocation(), Player->GetActorLocation());
+    
+    if (Distance < AttackRange)
+    {
+        Attack();
+        
+        // 공격 중에는 거리 체크 중단
+        GetWorld()->GetTimerManager().PauseTimer(DistanceCheckTimer);
+        
+        // 2초 후 다시 거리 체크 재개
+        FTimerHandle ResumeTimer;
+        GetWorld()->GetTimerManager().SetTimer(
+            ResumeTimer,
+            [this]()
+            {
+                GetWorld()->GetTimerManager().UnPauseTimer(DistanceCheckTimer);
+            },
+            2.0f,
+            false
+        );
+    }
+}
+
+void AEnemy::Attack()
+{
+    UE_LOG(LogTemp, Warning, TEXT("Enemy가 Player를 공격합니다!"));
+    // 공격 애니메이션 재생
+    // Player에게 데미지 전달
+}
+```
+
+- 0.1초마다 루프를 돌면서 타이머 반복 호출하기<br>
+
+**성능 개선**
+
+```
+Tick 방식: 60회/초 → Timer 방식: 10회/초
+CPU 부하 약 6배 감소 🎯
+Enemy 200마리 기준: 12,000회/초 → 2,000회/초
+```
+
+### Timer 사용시 팁
+
+- **주기 조절** – Enemy AI는 0.1초마다 체크로 충분, 매 프레임 불필요<br>
+- **모든 타이머 종료** – Enemy `EndPlay`에서 ClearAllTimersForObject 호출<br>
+- **핸들 유효성 확인** – `IsValid()`로 체크 후 조작<br>
+- **람다 남용 주의** – Enemy 수명이 보장되지 않으면 크래시 위험<br>
+
+# 3단계. 이벤트 기반 아키텍처 🎇
+
+## 3-1. 폴링 → 이벤트 전환
+
+### 폴링(Polling) ❌
+
+```cpp
+// 나쁜 예시 - 폴링 방식
+void AEnemy::Tick(float DeltaTime)
+{
+    // 매 프레임 확인
+    if (Player && Player->GetHealth() <= 0)
+    {
+        StopChasing();
+        PlayVictoryAnimation();
+    }
+}
+```
+
+- 일반적인 '함수 호출'이지만<br>
+  Tick에서 계속 조건을 검사함<br>
+
+### 이벤트(Event) ✅
+
+```cpp
+// 좋은 예시 - 이벤트 방식
+void APlayer::TakeDamage(float Damage)
+{
+    Health -= Damage;
+    
+    if (Health <= 0)
+    {
+        OnPlayerDied.Broadcast(); // 이벤트 발생!
+    }
+}
+
+// Enemy는 이벤트 구독
+void AEnemy::BeginPlay()
+{
+    if (APlayer* Player = GetPlayer())
+    {
+        Player->OnPlayerDied.AddUObject(this, &AEnemy::OnPlayerDeath);
+    }
+}
+
+void AEnemy::OnPlayerDeath()
+{
+    StopChasing();
+    PlayVictoryAnimation();
+}
+```
+
+**효과**: 불필요한 Tick 제거, 성능 최대 60배 향상<br>
+
+### 결론
+
+- 폴링: 간단하지만 성능 불리<br>
+- 이벤트: CPU 부하↓, 코드 구조↑<br>
+- 상황별 Delegate 선택<br>
+
+클라이언트에서도 성능 최적화가 좋을 수 있으나<br>
+서버 구조에서 더욱 극대화됨<br>
+
+## 3-2. Event Bus 패턴 - 중앙 집중형 이벤트 관리
+
+```cpp
+UCLASS()
+class UGameEventBus : public UObject
+{
+    GENERATED_BODY()
+    
+public:
+    static UGameEventBus* GetInstance();
+
+    // Enemy 관련 이벤트들
+    DECLARE_MULTICAST_DELEGATE_OneParam(FOnEnemyKilled, AEnemy*);
+    DECLARE_MULTICAST_DELEGATE_TwoParams(FOnEnemyDamaged, AEnemy*, float);
+    DECLARE_MULTICAST_DELEGATE_OneParam(FOnEnemySpawned, AEnemy*);
+    
+    FOnEnemyKilled OnEnemyKilled;
+    FOnEnemyDamaged OnEnemyDamaged;
+    FOnEnemySpawned OnEnemySpawned;
+
+private:
+    static UGameEventBus* Instance;
+};
+```
+
+- 이벤트 구독을 누가 하고 있는지를 중간 다리를 만들어 관리하기<br>
+- Actor끼리 구독을 하고 있으면 생각보다 추적하기 어려운 상황<br>
+
+```cpp
+// Enemy 죽음 발행(?)
+void AEnemy::Die()
+{
+    UGameEventBus::GetInstance()->OnEnemyKilled.Broadcast(this);
+    Destroy();
+}
+```
+
+```cpp
+// 다른 Enemy들이 구독
+void AEnemy::BeginPlay()
+{
+    UGameEventBus::GetInstance()->OnEnemyKilled.AddUObject(this, &AEnemy::OnOtherEnemyKilled);
+}
+
+void AEnemy::OnOtherEnemyKilled(AEnemy* DeadEnemy)
+{
+    // 동료가 죽으면 경계 레벨 상승
+    if (FVector::Dist(GetActorLocation(), DeadEnemy->GetActorLocation()) < 1000.0f)
+    {
+        AlertLevel = FMath::Min(AlertLevel + 1, MaxAlertLevel);
+    }
+}
+```
+
+- 모든 Enemy들에게 구독하게 하는 것보다<br>
+  깔끔하게 정리할 수 있음<br>
+
+### **주의사항**
+
+1. **메모리 누수**: Enemy가 죽을 때 이벤트 구독 해제 필수<br>
+    
+```cpp
+void AEnemy::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    UGameEventBus::GetInstance()->OnEnemyKilled.RemoveAll(this);
+    Super::EndPlay(EndPlayReason);
+}
+```
+
+- Delegate에서 전반적으로 주의할 부분임<br>
+
+2. **순환 참조**: 이벤트 처리 중 또 다른 이벤트를 바로 발행하면 무한 루프 가능 → `SetTimerForNextTick`으로 지연<br>
+
+- 이벤트를 바로 처리하는 것에 주의하자<br>
+  (순환은 위험)<br>
+
+# 4단계. 비동기 처리와 스레드 🚀
+
+## 4-1. 게임이 멈추는 이유부터 이해하자
+
+### 싱글 스레드의 한계
+
+```
+[싱글 스레드 = 요리사 1명]
+손님1: "파스타" (3분)
+손님2: "피자" (5분)
+손님3: "샐러드" (1분)
+
+→ 순서대로 처리: 파스타(3분) → 피자(5분) → 샐러드(1분)
+→ 샐러드 손님은 9분 대기! 😱
+```
+
+### 메인 스레드 하나가 처리한다면…
+
+```cpp
+void GameLoop()  // 매 프레임 실행
+{
+    ProcessInput();        // 0.5ms
+    UpdateGameLogic();     // 2ms
+    SpawnEnemies(200);     // 100ms 💀 <- 여기서 멈춤
+    UpdatePhysics();       // 3ms
+    RenderFrame();         // 5ms
+}
+```
+
+**60FPS 유지 조건**
+
+- 1프레임 = 16.67ms 이내<br>
+- 100ms 작업 = 6프레임 손실 = 눈에 띄는 끊김<br>
+
+싱글 스레드의 한계<br>
+너무 큰 작업을 혼자 실행하면 뒤의 작업이 밀림..<br>
+
+## 4-2. 언리얼의 멀티스레드 구조와 역할
+
+### 주요 스레드 소개
+
+```
+[Game Thread] - "감독"
+├─ 게임 로직 처리
+├─ 입력 처리
+├─ UI 업데이트
+└─ UObject 생성/삭제
+
+[Render Thread] - "그래픽 담당"
+├─ 드로우 콜 준비
+├─ 머티리얼 처리
+└─ 렌더 커맨드 생성
+
+[RHI Thread] - "GPU 통역사"
+├─ DirectX/Vulkan 명령 변환
+└─ GPU에 실제 명령 전달
+
+[Audio Thread] - "사운드 엔지니어"
+├─ 오디오 믹싱
+├─ 3D 사운드 계산
+
+[Worker Threads] - "일꾼들" (CPU 코어 수만큼)
+├─ 물리 계산
+├─ AI 경로 탐색
+├─ 파일 로딩
+└─ 기타 백그라운드 작업
+```
+
+- 각각의 전문 스레드를 활용하기<br>
+  - 기본적으로 엔진 내에서 분류되어 작업<br>
+  - 일반적으로는 프로그래머가 직접 건드리는 편은 드문 편<br>
+    - 보통 Game/Render/Worker 스레드를 기준으로 작업을 생각하게 됨<br>
+
+### 현재 스레드 확인하기
+
+```cpp
+void CheckCurrentThread()
+{
+    if (IsInGameThread())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("게임 스레드입니다"));
+    }
+    else if (IsInRenderingThread())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("렌더 스레드입니다"));
+    }
+    else
+    {
+        uint32 ThreadId = FPlatformTLS::GetCurrentThreadId();
+        UE_LOG(LogTemp, Warning, TEXT("워커 스레드 #%d입니다"), ThreadId);
+    }
+}
+```
+
+## 4-3. 스레드별 작업 가능/불가능 규칙
+
+### Game Thread에서만 가능한 작업 ⚠️
+
+```cpp
+// ✅ Game Thread에서만 가능한 것들
+void GameThreadOnly()
+{
+    // Enemy 스폰
+    AEnemy* NewEnemy = GetWorld()->SpawnActor<AEnemy>();
+    
+    // UI 조작
+    EnemyCountWidget->SetText(FText::AsNumber(EnemyCount));
+    
+    // 컴포넌트 추가/제거
+    UStaticMeshComponent* Mesh = NewObject<UStaticMeshComponent>(this);
+    
+    // 대부분의 언리얼 API
+    UGameplayStatics::GetPlayerController(GetWorld(), 0);
+}
+```
+
+- 게임 스레드만이 UObject 생성/제거 가 가능<br>
+  - 대부분의 엔진 API 호출과 연관된 스레드<br>
+
+### 모든 스레드에서 가능한 작업 ✅
+
+```cpp
+// ✅ 모든 스레드에서 가능
+void AnyThreadSafe()
+{
+    // Enemy AI 경로 계산 (순수 연산)
+    FVector PathToPlayer = CalculatePath(EnemyPos, PlayerPos);
+    
+    // Enemy 배열 정렬 (동시 접근만 조심)
+    TArray<FEnemyData> EnemyData = GetEnemyData();
+    EnemyData.Sort([](const FEnemyData& A, const FEnemyData& B)
+    {
+        return A.DistanceToPlayer < B.DistanceToPlayer;
+    });
+    
+    // Enemy 데이터 파일 읽기
+    FString EnemyConfig;
+    FFileHelper::LoadFileToString(EnemyConfig, TEXT("EnemyData.json"));
+}
+```
+
+### 절대 하면 안 되는 것 💀
+
+```cpp
+// ❌ 다른 스레드에서 이러면 크래시!
+void WillCrashInWorkerThread()
+{
+    // Enemy 생성 시도
+    AEnemy* Enemy = NewObject<AEnemy>();  // 💥 크래시!
+    
+    // World에서 Enemy 스폰
+    GetWorld()->SpawnActor<AEnemy>();     // 💥 크래시!
+    
+    // Enemy UI 조작
+    EnemyHealthBar->SetPercent(0.5f);     // 💥 크래시!
+}
+```
+
+- 이건 게임 스레드의 일!<br>
+
+- 크래시가 바로 나거나, 나중에 이상한 결과가 발생할 수 있음<br>
+
+## 4-4. 언리얼 비동기 실행 도구 3종 비교
+
+- 언리얼이 제공하는 비동기 실행 도구를 이용하자<br>
+  (C++ 방식이 아니라)<br>
+
+### 1) Async() — 간단한 백그라운드 작업
+
+```cpp
+// Enemy 거리 정렬
+Async(EAsyncExecution::ThreadPool, [this]()
+{
+    // Enemy 200마리 거리순 정렬
+    SortEnemiesByDistance();
+});
+
+// 실행 옵션
+EAsyncExecution::Thread           // 새 스레드 생성 (대량 Enemy 처리)   - 생성과 제거 비용이 큼, 중간 간섭 받지 않음
+EAsyncExecution::ThreadPool       // 기존 워커 풀 사용 (일반적)         - 미리 생성해둔 스레드 중 하나를 불러서 작업 담당
+EAsyncExecution::ThreadIfForkSafe // 조건부 스레드                    - Fork-safe 상황에 따라 Thread 나 TreadPool을 골라 사용
+EAsyncExecution::TaskGraph        // 태스크 그래프 사용                - 작업을 여러 것으로 쪼개어 스레드들에게 병렬 처리하도록 지시 (경로 처리 등)
+EAsyncExecution::TaskGraphMainThread // 게임 스레드로 예약
+```
+
+### 2) AsyncTask() — 특정 스레드 지정
+
+```cpp
+// Enemy 처치 후 UI 업데이트
+AsyncTask(ENamedThreads::GameThread, [this]()
+{
+    // Enemy 카운트 UI 업데이트 (Game Thread 전용)
+    EnemyCountWidget->SetText(FText::AsNumber(--RemainingEnemies));
+});
+
+// Enemy AI 계산을 백그라운드로
+AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [this]()
+{
+    // Enemy 200마리 다음 행동 계산
+    CalculateAllEnemyNextActions();
+});
+```
+
+- 특정 스레드에 작업을 던지는 방식<br>
+
+### 3) UE::Tasks — 차세대 태스크 시스템 (UE5)
+
+```cpp
+#include "Tasks/Task.h"
+
+// Enemy 스폰 → 초기화 → AI 설정 체이닝
+UE::Tasks::Launch(UE_SOURCE_LOCATION, 
+    []() { return LoadEnemyData(); })
+    .Then(UE_SOURCE_LOCATION, 
+    [](auto Data) { return InitializeEnemies(Data); })
+    .Then(UE_SOURCE_LOCATION, 
+    [](auto Enemies) { SetupEnemyAI(Enemies); });
+
+// Enemy 200마리 병렬 처리
+TArray<UE::Tasks::FTask> EnemyTasks;
+for (int i = 0; i < 200; ++i)
+{
+    EnemyTasks.Add(UE::Tasks::Launch(UE_SOURCE_LOCATION, [i]()
+    {
+        return ProcessEnemyAI(i);
+    }));
+}
+
+UE::Tasks::WaitAll(EnemyTasks);  // 모든 Enemy AI 완료 대기
+```
+
+- A->B->C 순서의 작업을 선언<br>
+
+- Task 를 병렬처리하여 Enemy를 200마리 생성 -> 이후 작업 완료 대기<br>
+
+- 중간 작업 중단/취소 기능이 존재<br>
+
+### 성능 & 사용성 비교표
+
+| 기능 | Async() | AsyncTask() | UE::Tasks |
+| --- | --- | --- | --- |
+| **난이도** | ⭐ 쉬움 | ⭐⭐ 보통 | ⭐⭐⭐ 어려움 |
+| **성능** | 좋음 | 좋음 | 최고 |
+| **체이닝** | ❌ | ❌ | ✅ |
+| **병렬 처리** | 수동 | 수동 | 자동 지원 |
+| **취소 가능** | ❌ | ❌ | ✅ |
+| **언제부터** | UE4 | UE4 | UE5 |
+
+## 4-5. 간단한 실전 예제
+
+### 시나리오: Enemy 200마리 AI 경로 계산
+
+### 나쁜 예 (메인 스레드에서 직접 계산함) ❌
+
+```cpp
+void AEnemyManager::UpdateAllEnemyPaths()
+{
+    // 이 순간 게임이 멈춤! 😱
+    for (AEnemy* Enemy : AllEnemies)
+    {
+        if (Enemy)
+        {
+            // 복잡한 A* 경로 탐색 (Enemy당 0.5ms)
+            TArray<FVector> Path = FindPathToPlayer(Enemy);
+            Enemy->SetPath(Path);
+        }
+    }
+    // 200마리 × 0.5ms = 100ms (6프레임 정지!)
+}
+```
+
+### 좋은 예 (백그라운드 스레드 활용) ✅
+
+```cpp
+void AEnemyManager::UpdateAllEnemyPathsAsync()
+{
+    // 1. Enemy 데이터 복사 (스레드 안전)
+    TArray<FEnemyPathData> EnemyDataCopy;
+    for (AEnemy* Enemy : AllEnemies)
+    {
+        if (Enemy)
+        {
+            FEnemyPathData Data;
+            Data.EnemyID = Enemy->GetUniqueID();
+            Data.StartLocation = Enemy->GetActorLocation();
+            Data.TargetLocation = Player->GetActorLocation();
+            EnemyDataCopy.Add(Data);
+        }
+    }
+    
+    // 2. 백그라운드에서 경로 계산
+    Async(EAsyncExecution::ThreadPool, [this, EnemyDataCopy]()
+    {
+        // 여기는 Worker Thread! 게임은 계속 돌아감
+        TArray<FEnemyPathResult> PathResults;
+        
+        for (const FEnemyPathData& Data : EnemyDataCopy)
+        {
+            FEnemyPathResult Result;
+            Result.EnemyID = Data.EnemyID;
+            Result.Path = CalculatePathAStar(Data.StartLocation, Data.TargetLocation);
+            PathResults.Add(Result);
+        }
+        
+        // 3. Game Thread로 돌아와서 Enemy에 경로 적용
+        AsyncTask(ENamedThreads::GameThread, [this, PathResults]()
+        {
+            for (const FEnemyPathResult& Result : PathResults)
+            {
+                if (AEnemy* Enemy = FindEnemyByID(Result.EnemyID))
+                {
+                    Enemy->SetPath(Result.Path);
+                }
+            }
+        });
+    });
+}
+```
+
+- 복사하여 Race Condition 예방<br>
+- 200마리 경로 계산을 Worker 스레드에 처리<br>
+- 이후, GameThread에게 Path를 적용해줌<br>
+
+## 4-6. 언제 어떤 방법을 쓸까?
+
+### 결정 가이드
+
+```
+Q: 작업이 0.1초 이상 걸리나?
+├─ NO → 그냥 메인 스레드에서 처리
+└─ YES ↓
+
+Q: UObject/UI를 다루나?
+├─ YES → Timer나 Tick 사용 (비동기 불가)
+└─ NO ↓
+
+Q: 단순한 일회성 작업인가?
+├─ YES → Async() 사용
+└─ NO ↓
+
+Q: 여러 단계가 연결되나?
+├─ YES → UE::Tasks 사용
+└─ NO → AsyncTask() 사용
+```
+
+1. 빠른 작업은 그냥 내버려두기<br>
+2. UObject/UI는 메인 스레드 전용임<br>
+3. 단순 일회성 작업이라면 Async<br>
+4. 여러 단계의 순차적 적용이라면 Tasks, 아니라면 AsyncTask<br>
+
+### 황금 규칙 🏆
+
+1. **의심되면 Game Thread에서** — 크래시보다는 느린 게 낫다<br>
+2. **UI는 항상 Game Thread** — 예외 없음<br>
+3. **데이터는 복사해서 전달** — 공유보다 복사가 안전<br>
+4. **작업 완료를 확인** — 비동기는 "언제 끝날지 모른다"<br>
+5. **프로파일링으로 검증** — 추측 말고 측정<br>
+
+**💡 핵심 포인트**
+
+> 비동기는 강력하지만, 잘못 쓰면 디버깅 지옥
+> 
+> 
+> 하지만 제대로 쓰면? 0.1초 멈추던 게임이 60FPS를 유지
+>
+
+- 스레드 쓰기 전에 '프로파일링' 쓰기<br>
+  (성능 확인을 해보고 최적화를 하자!)<br>
+
+- 테스트 하기 쉬운 구조를 만들어 둔다면<br>
+  테스트 코드 작성 -> 프로파일링 -> 최적화<br>
+
+- 사실 실전에서 고민하는 것이 맞을수도?<br>
+  단순히 '지식'적으로 알고 있는 것도 하나의 도움이 됨<br>
