@@ -8,6 +8,7 @@ tags:
   - C++
   - Class vs Struct
   - OOP
+  - 모의 면접
 ---
 
 ## 클래스 vs 구조체?
