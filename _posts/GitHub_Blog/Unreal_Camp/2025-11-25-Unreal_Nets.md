@@ -149,3 +149,30 @@ void AGameModeBase::RestartPlayer(AController* NewPC); // Pawn 스폰 & Possess
 - 이후, Client 쪽에서 PostNetInit() 등이 호출<br>
   (이미 시작했다면 Beginplay도 바로 호출)<br>
 
+- RestartPlayer 타이밍에 추가적으로<br>
+  Pawn에 컨트롤러가 빙의되기에<br>
+  - AController::Possess<br>
+  - Pawn의 PossessedBy() 호출(서버에서)<br>
+    - 내부에서 SetOwner를 통해 Owner 설정<br>
+    - 컨트롤러 설정<br>
+  - 변경된 Owner로 인해 OnRep_Owner (클라) 호출<br>
+
+```cpp
+Controller.Possess(Pawn)
+    → Pawn::PossessedBy(ServerController)
+    → Pawn.SetOwner(ServerController)
+    → Replication 시스템에서 Owner 변경 감지
+```
+
+- 타이밍에 따라 다를수 있으나<br>
+  PostNetInit() 호출 후, 추가적으로 OnRep_Owner()가 호출될 수 있음<br>
+  (Owner 역시 클라에 복제되어 있다면)<br>
+
+```cpp
+(처음 Pawn 생성될 때)
+Pawn.PostNetInit()
+Pawn.OnRep_Owner()     // Owner가 이미 있는 상태에서 생성되었다면 호출됨
+
+(그 이후 서버에서 Owner 변경 패킷 도착)
+Pawn.OnRep_Owner()     // Possess 효과가 클라이언트에서 여기서 일어남
+```
