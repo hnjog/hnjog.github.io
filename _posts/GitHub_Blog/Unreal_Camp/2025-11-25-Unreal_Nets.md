@@ -136,7 +136,7 @@ UGameInstance::StartGameInstance()
 - PlayerController? PlayerState?<br>
 
 ```cpp
-bool AGameModeBase::PreLogin(...);  // 접속 허가 여부
+bool AGameModeBase::PreLogin(...);  // 접속 허가 여부 - ErrorMessage에 임의의 문자열 넣을시, 로그인 중인 플레이어의 연결이 거부됨 (설정에 따라 StandAlone으로 유지하거나, 다른 Level 로드)
 APlayerController* AGameModeBase::Login(...); // PC 생성
 void AGameModeBase::PostLogin(APlayerController* NewPC);
 void AGameModeBase::HandleStartingNewPlayer(APlayerController* NewPC);
