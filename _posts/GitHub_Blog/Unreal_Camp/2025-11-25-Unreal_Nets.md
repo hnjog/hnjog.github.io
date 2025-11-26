@@ -1,7 +1,7 @@
 ---
 title: "Unreal Nets"
 date : "2025-11-25 18:00:00 +0900"
-last_modified_at: "2025-11-25T18:00:00"
+last_modified_at: "2025-11-26T18:00:00"
 categories:
   - Unreal
   - C++
@@ -175,4 +175,180 @@ Pawn.OnRep_Owner()     // Owner가 이미 있는 상태에서 생성되었다면
 
 (그 이후 서버에서 Owner 변경 패킷 도착)
 Pawn.OnRep_Owner()     // Possess 효과가 클라이언트에서 여기서 일어남
+```
+
+## NetLoadOnClient
+
+[![Image](https://github.com/user-attachments/assets/412693f8-266b-4f91-bbe3-216893f231cd)](https://github.com/user-attachments/assets/412693f8-266b-4f91-bbe3-216893f231cd){: .image-popup}<br>
+
+- 레벨 디자인을 통해<br>
+  레벨에 고정적으로 배치되는 액터는 해당 옵션을 true로 지정해<br>
+  모든 Client가 스스로 Spawn 시키도록 설정<br>
+  (로그인 시 호출되는 PlayerController와 혼동하지 말것!)<br>
+
+- 클라리언트가 접속할 때, 월드에 이미 존재하는 해당 옵션이 true인<br>
+  Actor를 클라이언트 쪽에도 생성<br>
+
+- Level에 이미 배치한 Actor 나<br>
+  런타임 중 생성한 Actor 등에 true를 주어 사용<br>
+
+## Replication Notify
+
+- 서버에서 실행되지 않고 클라에서만 실행되는 특징이 있음<br>
+  (서버에서 실행 시, 명시적인 호출 필요)<br>
+
+- 속성값이 변경되어서 변경된 값이 클라에 복제되는 시점에<br>
+  Callback 함수 바인딩 가능<br>
+  - 이것을 Replication Notify 함수라 함<br>
+  - C++ : OnRep_<br>
+  - BP : RepNotify<br>
+
+| 구분 | C++ OnRep 함수 | Blueprint RepNotify |
+|------|----------------|----------------------|
+| 호출 위치 | 클라이언트에서만 자동 호출 | **서버 + 클라이언트 모두 호출** |
+| 명시적 호출 | C++에서 직접 호출 가능 | 명시적 호출 불가능 |
+| 호출 조건 | 값이 변경된 경우에만 호출 | **서버: 항상 호출** / **클라이언트: 값 변경 시 호출** |
+
+## NetUpdateFrequency
+
+- 서버에서 클라이언트로 1초당 몇 번 Replication 정보를 전송할지를 표현하는 변수<br>
+  - 기본값 100(초당 100번)<br>
+  - 다만 '이론상'의 값이며, 이를 보장하진 않음<br>
+    (서버의 Tick Rate에 따라 Replication이 발생하나,<br>
+     서버의 성능에 따라 달라짐)<br>
+    -> 그렇기에 렌더링 기능이 없는 Dedicated Server가 비교적 좋은 성능을 발휘 가능<br>
+
+- Pawn, PlayerController 등의 기본값 : 100<br>
+  GameState : 10<br>
+  PlayerState : 1<br>
+
+- 해당 변수의 비율을 낮추어 서버의 성능을 개선할 수 있음<br>
+
+- 또한 액터의 처음 서버 위치와 속도 값을 안다면<br>
+  이를 이용하여 '예측'하여 동기화가 가능<br>
+  (보간)<br>
+
+- MinNetUpdateFrequency?<br>
+  - Replication 업데이트가 '느리게' 발생하지 않도록 제한하는 Actor 변수<br>
+  - 최소한의 업데이트 빈도를 보장하는 용도의 변수이다<br>
+    (실제 업데이트 Frequency = max(NetUpdateFrequency,MinNetUpdateFrequency))<br>
+
+## Relevancy(연관성/관련성)
+
+[![Image](https://github.com/user-attachments/assets/5d322ed2-54e1-4cbb-916f-a0ae1c306a6f)](https://github.com/user-attachments/assets/5d322ed2-54e1-4cbb-916f-a0ae1c306a6f){: .image-popup}<br>
+
+- 레벨에 있는 모든 액터의 정보를 클라에게 실시간으로 전송하는 것은<br>
+  꽤나 무거운 작업<br>
+  - 그렇기에 해당 클라이언트 커넥션과 '연관성'이 있는 액터만을 Replication을 해준다<br>
+
+### 연관성의 판단 기준(Actor)
+
+- Owner<br>
+  - 해당 Actor를 소유하고 있는 Actor(Owner)<br>
+    (ex : 무기 액터를 소유한 캐릭터)<br>
+  - 거리 기반 Relevancy를 무시하고 항상 Replicate 됨<br>
+    (내 소유 Actor는 항상 레플리케이션)<br>
+
+- Instigator<br>
+  - 해당 Actor에 영향을 끼친 Pawn<br>
+    (ex : 데미지를 가한 Pawn)<br>
+  - 보통은 OwnerShip Chain을 따라 연관성에 포함되는 편<br>
+
+- AlwaysRelevant<br>
+  - 해당 Actor가 모든 Client에 연관성이 있게끔 설정<br>
+    (ex : 맵 전체에 보여야 하는 보스 몬스터 등)<br>
+
+- NetUseOwnerRelevancy<br>
+  - Owner 액터의 연관성으로 해당 Actor 연관성을 대신할 때 사용<br>
+    (소유한 무기 Actor 등은 장비한 캐릭터가 보일때 같이 보여야 함)<br>
+
+- OnlyRelevantToOwner<br>
+  - Owner 액터에게만 연관성을 가짐 (다른 액터와는 연관성 x)<br>
+    (길찾기 Actor - 다른 플레이어가 나의 편의성 액터를 볼 필요 없음)<br>
+
+- NetCullDistance<br>
+  - View와의 거리에 따라 연관성 여부 결정<br>
+    (아주 먼 곳의 고블린 Actor를 가까우면 레플리케이션, 멀면 안하기)<br>
+
+[![Image](https://github.com/user-attachments/assets/0611676e-b5d0-464e-a2aa-7988cd3db16a)](https://github.com/user-attachments/assets/0611676e-b5d0-464e-a2aa-7988cd3db16a){: .image-popup}<br>
+
+### 연관성의 추가 판단 기준 (Pawn/Character/PlayerController)
+
+- Viewer<br>
+  - 클라이언트 커넥션이 소유한 Player Controller<br>
+
+- ViewTarget<br>
+  - 플레이어 컨트롤러가 빙의한 Pawn<br>
+  - Viewer 에 의해 빙의된 ViewTarget이 레벨을 돌아다님<br>
+
+[![Image](https://github.com/user-attachments/assets/15d97cd7-9c08-4e0d-9305-e0e0fa64ae72)](https://github.com/user-attachments/assets/15d97cd7-9c08-4e0d-9305-e0e0fa64ae72){: .image-popup}<br>
+
+- 관련 함수<br>
+
+```cpp
+virtual bool AActor::IsNetRelevantFor(
+    const AActor* RealViewer, // Connection이 가진 Pawn (Player의 아바타)
+    const AActor* ViewTarget, // PlayerCameraManager가 바라보는 대상
+    const FVector& SrcLocation
+) const;
+```
+
+- 플레이어가 빙의한 RealViewer는 항상 연관성이 있기에<br>
+  Replicate 됨<br>
+
+- Player의 ViewTarget 역시 항상 연관성이 있는 편<br>
+  (Replicate 됨)<br>
+
+## NetPriority
+
+- 한정된 '대역폭'(NetBandWidth) 내에서<br>
+  서버가 어떤 Actor를 먼저 Replicate 할 지 결정하는 가중치<br>
+  - 순서를 정하는데만 사용<br>
+    (우선순위를 정하는 것이며, 서버 상황에 따라 모두 정상적으로 보내지기도 함)<br>
+    ('포화 상태'가 아니라면 기본적으로 모두 보내질 수 있음)
+
+- 단독으로 쓰이기 보단<br>
+  NetUpdateFrequency와 마지막으로 갱신되었는지 등의 요소도 같이 사용됨<br>
+  - 또한 NetCullDistance 같은 '연관성' 속성도 반영될 수 있음<br>
+
+- 포화 상태?<br>
+  : 보낼 액터 데이터들의 총량이 커서 '대역폭'을 넘어선 경우를 뜻함<br>
+    (패킷 용량이 꽉찼다!)<br>
+    - 이 경우에 NetPriority에 따라 보낼 데이터를 결정<br>
+
+[![Image](https://github.com/user-attachments/assets/761151d8-d114-4acd-aef1-ebb832527e90)](https://github.com/user-attachments/assets/761151d8-d114-4acd-aef1-ebb832527e90){: .image-popup}<br>
+
+## NetDormancy (휴면)
+
+- Actor의 Replication과 RPC를 멈추게 하는 설정(NetDormancy 설정)<br>
+  - 자주 수정되지 않는 Actor에 적합<br>
+  - 너무 자주 수정되는 Actor에 적용시, 오히려 오버헤드가 발생 가능함<br>
+
+```cpp
+enum class ENetDormancy : uint8
+{
+    DORM_Never,            // 절대 Dormant 하지 않음. 항상 Replicate.
+    DORM_Awake,            // 활성 상태, Replicate 대상, 휴면 가능 (기본)
+    DORM_DormantPartial,   // 일부 클라만 Dormant
+    DORM_Initial,          // 휴면 상태로 시작하고, 필요할 때 깨울 수 있는 상태
+    DORM_DormantAll,       // 모든 클라이언트에게 Dormant
+};
+```
+
+- Conditional Property Replication<br>
+  : 특정 UPROPERTY의 레플리케이트 변수가 '조건'에서만 전송되도록 하는 기능<br>
+    (일반적으론 Replication 등록되면, 해제할 수 없기에 이러한 조건 분류를 통해<br>
+     세밀한 조정을 함)<br>
+    - 변수마다 Replication 전송 조건을 설정<br>
+
+```cpp
+COND_None                // 항상 전송(기본)
+COND_InitialOnly         // Actor 최초 생성 시에만 전송
+COND_OwnerOnly           // Owner 클라이언트에게만 전송
+COND_SkipOwner           // Owner 제외 모든 클라이언트에게만
+COND_SimulatedOnly       // SimulatedProxy에게만
+COND_AutonomousOnly      // AutonomousProxy에게만
+COND_SimulatedOrPhysics  // SimulatedProxy + Physics
+COND_InitialOrOwner      // 초기 + Owner에게만
+COND_Custom              // C++ Override 시 직접 조건 선택
 ```
