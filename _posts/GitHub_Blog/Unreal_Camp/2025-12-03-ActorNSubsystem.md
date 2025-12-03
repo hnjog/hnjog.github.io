@@ -717,6 +717,12 @@ class UMyWorldSubsystem : public UWorldSubsystem
     보조하는 역할의 로직 매니저 등에 고려 가능함<br>
     (ex : WaveManager)<br>
 
+- 생성 자체는 서버/ 클라 양쪽에서 생성되지만<br>
+  별도로 Replicate 같은 동기화는 되지 않음<br>
+  (자동 동기화 x)<br>
+  - 정말 클라와의 동기화가 필요한 경우는 RPC 함수 등을 고려할 것<br>
+  - 게임 로직은 기본적으로 서버에서 동작하므로, 그 부분을 잘 염두해두자<br>
+
 ### 5. ULocalPlayerSubsystem
 
 ```cpp
