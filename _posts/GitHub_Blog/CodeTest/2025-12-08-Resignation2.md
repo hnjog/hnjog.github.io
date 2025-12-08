@@ -1,7 +1,7 @@
 ---
 title: "백준 Gold 5 퇴사 2"
-date : "2025-12-05 10:30:00 +0900"
-last_modified_at: "2025-12-05T10:30:00"
+date : "2025-12-08 10:30:00 +0900"
+last_modified_at: "2025-12-08T10:30:00"
 categories:
   - 코딩 테스트
 tags:
