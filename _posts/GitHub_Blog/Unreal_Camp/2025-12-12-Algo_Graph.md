@@ -817,7 +817,7 @@ using namespace std;
 
 int solution(int N, vector<vector<int>> road, int K) {
     // 1. 그래프 초기화
-    // adj[1] = {{2, 1}, {4, 2}} : 1번 마을은 2번(비용1), 4번(비용2)과 연결됨
+    // adj[1] = [{2, 1}, {4, 2}] : 1번 마을은 2번(비용1), 4번(비용2)과 연결됨
     vector<pair<int, int>> adj[51];
     
     // 거리 테이블 초기화 (모두 무한대로 설정)
