@@ -1,7 +1,7 @@
 ---
 title: "백준 Gold 5 최소 회의실 개수"
-date : "2025-12-18 10:30:00 +0900"
-last_modified_at: "2025-12-18T10:30:00"
+date : "2025-12-19 10:30:00 +0900"
+last_modified_at: "2025-12-19T10:30:00"
 categories:
   - 코딩 테스트
 tags:
