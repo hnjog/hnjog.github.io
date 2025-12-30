@@ -72,6 +72,33 @@ void ANpcBaseCharacter::HandleDeath(AActor* KillerActor)
 지금은 DeadTag를 처리하기에 '괜찮'을줄 알았으나<br>
 '미니언'이 많아진 상황에서 내부 로직 정리에 혼선이 있을 가능성이 존재함<br>
 
+
+*결국 '타이밍 문제'일 가능성이 유력*해 보임<br>
+
+**문제의 흐름**<br>
+
+1. HasMatchingTag 만으로 사망 처리 확인<br>
+2. AddLooseGameplayTag 로 DeadTag 부여<br>
+3. StateTree의 이벤트 호출 -> 사망용 GA 실행<br>
+4. GA에서 SetLifeSpan<br>
+
+이것이 'Atomic'하게 실행되는 것이 아님!<br>
+
+- ST의 '이벤트 큐'<br>
+  - 또한 '동시에' 같은 이벤트가 여러번 들어올 수 있음!<br>
+  - 따라서 '단 시간'에 사망 처리 이벤트가 와르르 들어오고<br>
+    처리 타이밍이 꼬여서 '무한 루프'가 아닌<br>
+	'매우 늦게 죽었을 가능성'도 존재함<br>
+	(DeadState 여도 다시 Root->Dead 로 전이하여 GA 재 호출)<br>
+
+- HasMatchingTag가 Tag를 확인하는 것과<br>
+  AddLooseGameplayTag가 Count를 '부여'하는 타이밍이 엇갈릴 수 있음<br>
+  (GAS가 태그 변경을 '모았다가' 한번에 계산하려 시도할 수 있음)<br>
+
+- GA도 TryAbility를 통해 호출되기에 '곧바로' 실행되지 않을 가능성이 존재<br>
+
+**유의할 점들**<br>
+
 - GAS의 `"태그 집계(Aggregation)"와 "스코프(Scope)"`<br>
   처리 방식으로 인하여 '과부하' 상황에서 오류가 발생 가능할 수 있음<br>
   - 성능 저하를 막기 위하여 Tag 변경에 Lock을 걸어놓는 등<br>
@@ -115,9 +142,67 @@ void ANpcBaseCharacter::HandleDeath(AActor* KillerActor)
 - 기존의 'Tick' 머테리얼 변화용 함수를<br>
   아예 bIsDead 용으로 승격시켰다!<br>
 
+```cpp
+AActor* ANpcBaseCharacter::GetAttackTarget() const
+{
+	if (IsTargetValid(CurrentAttackTarget.Get()) == false)
+	{
+		return nullptr;
+	}
+
+	return CurrentAttackTarget.Get();
+}
+
+bool ANpcBaseCharacter::CanAttack() const
+{
+	if (IsTargetValid(CurrentAttackTarget.Get()) == false)
+	{
+		return false;
+	}
+
+	float DistSq = GetSquaredDistanceTo(CurrentAttackTarget.Get());
+	float AttackRangeSq = AttackRange * AttackRange;
+
+	return DistSq <= AttackRangeSq;
+}
+
+bool ANpcBaseCharacter::IsTargetValid(AActor* TargetActor) const
+{
+	if (IsValid(TargetActor) == false)
+	{
+		return false;
+	}
+
+	if (TargetActor->GetClass()->ImplementsInterface(UPGTeamStatusInterface::StaticClass()))
+	{
+		bool bTargetDead = IPGTeamStatusInterface::Execute_GetIsDead(TargetActor);
+		if (bTargetDead)
+		{
+			return false;
+		}
+
+		int32 TargetTeamId = IPGTeamStatusInterface::Execute_GetTeamID(TargetActor);
+		if (TeamId == TargetTeamId)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+```
+
+- 또한 이 이외에도<br>
+  AttackTarget의 '공격 대상'의 '사망처리'용 bool 변수를 확인하도록 수정하였다<br>
+
 ## 문제 해결
 
 [![Image](https://github.com/user-attachments/assets/bf5a29c5-1e80-45ce-bce6-d38785bbce54)](https://github.com/user-attachments/assets/bf5a29c5-1e80-45ce-bce6-d38785bbce54){: .image-popup}<br>
 
 이제 비교적 많은 미니언들이 치고 받아도<br>
 이전과 같이 '무적' 미니언 버그가 나타나지 않았다!<br>
+
+### 배운 점
+
+1. 대규모로 사용될 코드가 있다면 '동기화 타이밍'을 더 고려할 것<br>
+2. 확실한 '상태 체크'용 변수는 bool 등을 고려<br>
