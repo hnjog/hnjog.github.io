@@ -4,11 +4,8 @@ date : "2025-11-11 16:00:00 +0900"
 last_modified_at: "2025-11-11T16:00:00"
 categories:
   - 포트폴리오
-  - 발표
-  - 후기
 tags:
   - Canva
-  - draw io
   - 발표
   - 후기
 ---
