@@ -1,7 +1,7 @@
 ---
 title: "Mass Entity"
-date : "2026-01-02 18:00:00 +0900"
-last_modified_at: "2026-01-02T18:00:00"
+date : "2026-01-10 18:00:00 +0900"
+last_modified_at: "2026-01-10T18:00:00"
 categories:
   - Unreal
   - Mass AI
