@@ -150,4 +150,4 @@ auto it = std::find_if(v.begin(), v.end(), [t](int x) {
 
 ## 참고 사이트
 
-- [https://en.cppreference.com/w/cpp/language/lambda.html]<br>
+- [작성에 도움을 받은 사이트](https://en.cppreference.com/w/cpp/language/lambda.html)<br>
