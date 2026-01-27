@@ -1,7 +1,7 @@
 ---
 title: "백준 Gold 1 도로검문"
-date : "2026-01-21 12:00:00 +0900"
-last_modified_at: "2026-01-21T12:00:00"
+date : "2026-01-27 12:00:00 +0900"
+last_modified_at: "2026-01-27T12:00:00"
 categories:
   - 코딩 테스트
 tags:
